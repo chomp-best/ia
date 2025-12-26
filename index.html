@@ -92,11 +92,13 @@
             transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
             transform: translateY(20px);
             opacity: 0;
+            pointer-events: none;
         }
 
         #whatsappContainer.visible {
             transform: translateY(0);
             opacity: 1;
+            pointer-events: auto;
         }
 
         .btn-glow:hover {
@@ -201,7 +203,7 @@
 
         <!-- Feedback UI -->
         <div id="errorMessage" class="hidden mt-8 text-center p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
-            Ocurrió un error. Por favor intenta de nuevo.
+            Ocurrió un error al conectar con la IA. Por favor intenta de nuevo.
         </div>
     </main>
 
@@ -210,7 +212,8 @@
     </footer>
 
     <script>
-        const apiKey = ""; // Inyectado por el entorno
+        // Clave de API integrada para funcionamiento offline/externo
+        const apiKey = "AIzaSyAO0ByY-NKubtjcdMYz7Ssemor6ZpUuB0k"; 
         const model = "gemini-2.5-flash-preview-09-2025";
         let hasAsked = false;
 
@@ -228,18 +231,19 @@
 
             if (!input.value.trim()) return;
 
+            // UI State: Loading
             btn.disabled = true;
             btnText.classList.add('hidden');
             btnLoader.classList.remove('hidden');
             results.classList.add('opacity-0');
             errorMsg.classList.add('hidden');
 
-            const systemPrompt = `Eres el Consultor de Estrategia de Eliseo Studio. 
-            El usuario te dirá un tipo de negocio. Responde en JSON con 3 consejos:
+            const systemPrompt = `Eres el Consultor de Estrategia Digital de Eliseo Studio. 
+            El usuario te dirá un tipo de negocio. Responde estrictamente en JSON con 3 consejos:
             - Tip 1 y 2: Estrategias de marketing o negocio específicas para ese rubro.
-            - Tip 3: DEBE SER sobre cómo ELISEO es el indicado para implementar esto. Enfócate en su estilo "Apple", diseño premium, excelencia en UX y botones integrados/interactivos que convierten. Explica por qué su estética minimalista y quirúrgica es lo que este negocio necesita para destacar.
+            - Tip 3: DEBE SER sobre cómo ELISEO es el indicado para implementar esto. Enfócate en su estilo "Apple", diseño premium, excelencia en UX y botones interactivos que convierten. Explica por qué su estética minimalista y quirúrgica es lo que este negocio necesita para destacar.
             
-            Estructura JSON:
+            Estructura JSON requerida:
             {
                 "tips": [
                     {"title": "Título estratégico", "description": "Descripción clara"},
@@ -257,19 +261,29 @@
                         body: JSON.stringify({
                             contents: [{ parts: [{ text: `Negocio: ${input.value}` }] }],
                             systemInstruction: { parts: [{ text: systemPrompt }] },
-                            generationConfig: { responseMimeType: "application/json" }
+                            generationConfig: { 
+                                responseMimeType: "application/json",
+                                temperature: 0.7
+                            }
                         })
                     }
                 );
 
                 const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error.message);
+                }
+
                 const content = JSON.parse(data.candidates[0].content.parts[0].text);
 
+                // Update UI Cards
                 content.tips.forEach((tip, index) => {
                     document.getElementById(`title-${index + 1}`).innerText = tip.title;
                     document.getElementById(`desc-${index + 1}`).innerText = tip.description;
                 });
 
+                // Prepare WhatsApp Message with the AI response content
                 let waMessage = `Hola Eliseo! Estuve usando tu IA de estrategia digital para mi negocio: *${input.value}*.\n\nMe convenció tu propuesta de implementación:\n`;
                 waMessage += `\n*${content.tips[2].title}*: ${content.tips[2].description}`;
                 waMessage += `\n\nQuiero que mi marca tenga ese estilo Apple y UX premium. ¿Podemos hablar?`;
@@ -277,33 +291,32 @@
                 const waLink = `https://wa.me/3795041420?text=${encodeURIComponent(waMessage)}`;
                 document.getElementById('whatsappBtn').href = waLink;
 
+                // Animation Reveal
                 results.classList.remove('opacity-0');
                 document.querySelectorAll('.bento-card').forEach(card => card.classList.add('visible'));
                 whatsappContainer.classList.add('visible');
 
+                // Final State
                 hasAsked = true;
                 input.disabled = true;
                 limitMsg.classList.remove('hidden');
+                btnText.innerText = "Completado";
 
             } catch (error) {
-                console.error(error);
+                console.error("Error en la generación:", error);
                 errorMsg.classList.remove('hidden');
                 btn.disabled = false;
                 btnText.classList.remove('hidden');
                 btnLoader.classList.add('hidden');
             } finally {
-                if (hasAsked) {
-                    btnLoader.classList.add('hidden');
-                    btnText.classList.remove('hidden');
-                    btnText.innerText = "Estrategia Lista";
-                }
+                btnLoader.classList.add('hidden');
+                btnText.classList.remove('hidden');
             }
         }
 
         async function fetchWithRetry(url, options, retries = 5, backoff = 1000) {
             try {
                 const response = await fetch(url, options);
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
                 return response;
             } catch (err) {
                 if (retries <= 0) throw err;
