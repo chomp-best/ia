@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Strategy | Eliseo Studio</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
+    <link rel="stylesheet" href="[https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css](https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css)">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&display=swap');
+        @import url('[https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&display=swap](https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&display=swap)');
         
         body { 
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -203,7 +203,7 @@
 
         <!-- Feedback UI -->
         <div id="errorMessage" class="hidden mt-8 text-center p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
-            Ocurrió un error al conectar con la IA. Por favor intenta de nuevo.
+            Ocurrió un error. <span id="errorDetail"></span>
         </div>
     </main>
 
@@ -212,9 +212,10 @@
     </footer>
 
     <script>
-        // Clave de API integrada para funcionamiento offline/externo
+        // Tu clave de API proporcionada
         const apiKey = "AIzaSyAO0ByY-NKubtjcdMYz7Ssemor6ZpUuB0k"; 
-        const model = "gemini-2.5-flash-preview-09-2025";
+        // Usamos gemini-1.5-flash para máxima compatibilidad externa
+        const model = "gemini-1.5-flash";
         let hasAsked = false;
 
         async function generateStrategy() {
@@ -226,6 +227,7 @@
             const btnLoader = document.getElementById('btnLoader');
             const results = document.getElementById('resultsContainer');
             const errorMsg = document.getElementById('errorMessage');
+            const errorDetail = document.getElementById('errorDetail');
             const whatsappContainer = document.getElementById('whatsappContainer');
             const limitMsg = document.getElementById('limitMessage');
 
@@ -239,90 +241,90 @@
             errorMsg.classList.add('hidden');
 
             const systemPrompt = `Eres el Consultor de Estrategia Digital de Eliseo Studio. 
-            El usuario te dirá un tipo de negocio. Responde estrictamente en JSON con 3 consejos:
+            El usuario te dirá un tipo de negocio. Responde estrictamente en formato JSON con exactamente 3 consejos:
             - Tip 1 y 2: Estrategias de marketing o negocio específicas para ese rubro.
-            - Tip 3: DEBE SER sobre cómo ELISEO es el indicado para implementar esto. Enfócate en su estilo "Apple", diseño premium, excelencia en UX y botones interactivos que convierten. Explica por qué su estética minimalista y quirúrgica es lo que este negocio necesita para destacar.
+            - Tip 3: Debe ser sobre por qué ELISEO es el indicado (estilo Apple, premium, excelente UX y botones integrados).
             
-            Estructura JSON requerida:
+            IMPORTANTE: Responde solo el JSON, sin texto adicional ni bloques de código.
+            Estructura JSON:
             {
                 "tips": [
-                    {"title": "Título estratégico", "description": "Descripción clara"},
-                    {"title": "Título estratégico", "description": "Descripción clara"},
-                    {"title": "Implementación Premium", "description": "Explicación de por qué Eliseo es el indicado con su enfoque Apple/UX"}
+                    {"title": "Título", "description": "Descripción"},
+                    {"title": "Título", "description": "Descripción"},
+                    {"title": "Implementación Premium", "description": "Explicación Eliseo"}
                 ]
             }`;
 
             try {
-                const response = await fetchWithRetry(
-                    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
-                    {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            contents: [{ parts: [{ text: `Negocio: ${input.value}` }] }],
-                            systemInstruction: { parts: [{ text: systemPrompt }] },
-                            generationConfig: { 
-                                responseMimeType: "application/json",
-                                temperature: 0.7
-                            }
-                        })
-                    }
-                );
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+                
+                const response = await fetchWithRetry(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: `Negocio: ${input.value}` }] }],
+                        systemInstruction: { parts: [{ text: systemPrompt }] },
+                        generationConfig: { 
+                            responseMimeType: "application/json"
+                        }
+                    })
+                });
 
                 const data = await response.json();
                 
                 if (data.error) {
-                    throw new Error(data.error.message);
+                    throw new Error(data.error.message || "Error en la clave de API o modelo.");
                 }
 
-                const content = JSON.parse(data.candidates[0].content.parts[0].text);
+                // Limpiar la respuesta por si viene con backticks de markdown
+                let rawText = data.candidates[0].content.parts[0].text;
+                rawText = rawText.replace(/```json/g, "").replace(/```/g, "").trim();
+                
+                const content = JSON.parse(rawText);
 
-                // Update UI Cards
+                // Update UI
                 content.tips.forEach((tip, index) => {
                     document.getElementById(`title-${index + 1}`).innerText = tip.title;
                     document.getElementById(`desc-${index + 1}`).innerText = tip.description;
                 });
 
-                // Prepare WhatsApp Message with the AI response content
-                let waMessage = `Hola Eliseo! Estuve usando tu IA de estrategia digital para mi negocio: *${input.value}*.\n\nMe convenció tu propuesta de implementación:\n`;
-                waMessage += `\n*${content.tips[2].title}*: ${content.tips[2].description}`;
-                waMessage += `\n\nQuiero que mi marca tenga ese estilo Apple y UX premium. ¿Podemos hablar?`;
+                // Prep WhatsApp
+                let waMessage = `Hola Eliseo! Estuve usando tu IA para mi negocio: *${input.value}*.\n\nPropuesta:\n*${content.tips[2].title}*: ${content.tips[2].description}\n\nQuiero el estilo Apple y UX premium.`;
+                document.getElementById('whatsappBtn').href = `https://wa.me/3795041420?text=${encodeURIComponent(waMessage)}`;
 
-                const waLink = `https://wa.me/3795041420?text=${encodeURIComponent(waMessage)}`;
-                document.getElementById('whatsappBtn').href = waLink;
-
-                // Animation Reveal
+                // Reveal
                 results.classList.remove('opacity-0');
                 document.querySelectorAll('.bento-card').forEach(card => card.classList.add('visible'));
                 whatsappContainer.classList.add('visible');
 
-                // Final State
                 hasAsked = true;
                 input.disabled = true;
                 limitMsg.classList.remove('hidden');
                 btnText.innerText = "Completado";
 
             } catch (error) {
-                console.error("Error en la generación:", error);
+                console.error(error);
                 errorMsg.classList.remove('hidden');
+                errorDetail.innerText = error.message;
                 btn.disabled = false;
                 btnText.classList.remove('hidden');
                 btnLoader.classList.add('hidden');
             } finally {
                 btnLoader.classList.add('hidden');
-                btnText.classList.remove('hidden');
             }
         }
 
-        async function fetchWithRetry(url, options, retries = 5, backoff = 1000) {
-            try {
-                const response = await fetch(url, options);
-                return response;
-            } catch (err) {
-                if (retries <= 0) throw err;
-                await new Promise(resolve => setTimeout(resolve, backoff));
-                return fetchWithRetry(url, options, retries - 1, backoff * 2);
+        async function fetchWithRetry(url, options, retries = 3, backoff = 1000) {
+            const response = await fetch(url, options);
+            if (!response.ok) {
+                const errData = await response.json().catch(() => ({}));
+                if (retries > 0 && response.status >= 500) {
+                    await new Promise(r => setTimeout(r, backoff));
+                    return fetchWithRetry(url, options, retries - 1, backoff * 2);
+                }
+                throw new Error(errData.error?.message || `HTTP ${response.status}`);
             }
+            return response;
         }
 
         document.getElementById('businessInput').addEventListener('keypress', (e) => {
