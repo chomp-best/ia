@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Strategy | Eliseo Studio</title>
-    <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
-    <link rel="stylesheet" href="[https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css](https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css)">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        @import url('[https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&display=swap](https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&display=swap)');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&display=swap');
         
         body { 
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -18,35 +18,18 @@
             min-height: 100vh;
         }
 
-        .glass-input {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-        }
-
-        .glass-input:focus {
-            background: rgba(255, 255, 255, 0.06);
-            border-color: #3b82f6;
-            outline: none;
-            box-shadow: 0 0 30px rgba(59, 130, 246, 0.1);
-        }
-
-        .glass-input:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
+        /* Estética Bento Card Original */
         .bento-card {
             background: #0a0a0a;
             border: 1px solid #1c1c1e;
-            border-radius: 32px;
+            border-radius: 40px;
             overflow: hidden;
             transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
-            opacity: 0;
-            transform: translateY(20px);
             display: flex;
             flex-direction: column;
+            opacity: 0;
+            transform: translateY(30px);
+            width: 100%;
         }
 
         .bento-card.visible {
@@ -56,30 +39,70 @@
 
         .bento-card:hover {
             border-color: #333336;
+            transform: translateY(-4px);
             background: #0f0f10;
         }
 
+        /* Variación para el consejo premium */
+        .premium-card {
+            border: 1px solid rgba(59, 130, 246, 0.5) !important;
+            background: linear-gradient(135deg, #0a0a0a 0%, #0d1117 100%);
+        }
+        
+        .premium-card:hover {
+            border-color: rgba(59, 130, 246, 0.8) !important;
+            box-shadow: 0 0 30px rgba(59, 130, 246, 0.1);
+        }
+
+        /* Input con Glassmorphism */
+        .glass-input {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 100px;
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        .glass-input:focus {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: #3b82f6;
+            outline: none;
+            box-shadow: 0 0 40px rgba(59, 130, 246, 0.15);
+        }
+
+        /* Navegación Circular */
         .back-nav {
             background: rgba(255, 255, 255, 0.03);
             backdrop-filter: blur(15px);
             border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 50%;
-            width: 44px;
-            height: 44px;
+            width: 50px;
+            height: 50px;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: all 0.3s ease;
         }
 
+        .back-nav:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: scale(1.1);
+        }
+
+        .status-badge {
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 100px;
+        }
+
         .loader {
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             border: 2px solid #3b82f6;
             border-bottom-color: transparent;
             border-radius: 50%;
             display: inline-block;
-            box-sizing: border-box;
             animation: rotation 1s linear infinite;
         }
 
@@ -89,133 +112,147 @@
         }
 
         #whatsappContainer {
-            transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
-            transform: translateY(20px);
+            transition: all 1s cubic-bezier(0.23, 1, 0.32, 1);
             opacity: 0;
+            transform: translateY(20px);
             pointer-events: none;
         }
 
         #whatsappContainer.visible {
-            transform: translateY(0);
             opacity: 1;
+            transform: translateY(0);
             pointer-events: auto;
         }
 
-        .btn-glow:hover {
-            box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+        .fade-up {
+            animation: fadeUp 0.8s cubic-bezier(0.23, 1, 0.32, 1) forwards;
         }
-        
-        .special-border {
-            border: 1px solid rgba(59, 130, 246, 0.3);
-            background: linear-gradient(145deg, #0a0a0a 0%, #0d1117 100%);
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
-<body class="p-6 md:p-12">
+<body class="p-6 md:p-16">
 
-    <!-- Header Navigation -->
-    <nav class="max-w-4xl mx-auto flex items-center justify-between mb-16">
+    <!-- Global Navigation -->
+    <nav class="max-w-4xl mx-auto flex items-center justify-between mb-20 fade-up">
         <a href="#" class="back-nav">
-            <i class="fa-solid fa-chevron-left text-gray-500 text-sm"></i>
+            <i class="fa-solid fa-chevron-left text-gray-400"></i>
         </a>
         <div class="text-right">
-            <p class="text-[9px] font-bold text-blue-500 uppercase tracking-[0.5em] mb-1">Intelligence Module</p>
-            <h1 class="text-xl font-medium tracking-tight">Estratega Digital AI</h1>
+            <p class="text-[10px] font-bold text-blue-500 uppercase tracking-[0.4em] mb-2">Showcase v2.0</p>
+            <h1 class="text-3xl font-semibold tracking-tighter">Proyectos de Élite</h1>
         </div>
     </nav>
 
     <main class="max-w-4xl mx-auto">
         
-        <!-- Input Section -->
-        <section class="mb-16 text-center">
-            <h2 class="text-4xl md:text-5xl font-semibold mb-6 tracking-tighter">
-                Diseñemos tu <span class="text-blue-500">futuro digital.</span>
+        <!-- Input Hero Section -->
+        <section class="text-center mb-24 fade-up" style="animation-delay: 0.1s;">
+            <h2 class="text-4xl md:text-6xl font-bold mb-8 tracking-tighter leading-tight">
+                Diseñemos tu <br>
+                <span class="text-blue-500">futuro digital.</span>
             </h2>
             <p class="text-gray-500 mb-10 text-sm md:text-base max-w-xl mx-auto">
-                Ingresa el nombre de tu negocio y nuestra inteligencia diseñará tu hoja de ruta personalizada con el sello de Eliseo Studio.
+                Ingresa el nombre de tu negocio o rubro y nuestra inteligencia diseñará 3 pilares clave para dominar tu mercado online.
             </p>
             
-            <div class="relative max-w-2xl mx-auto group">
+            <div class="relative max-w-2xl mx-auto">
                 <input 
                     type="text" 
                     id="businessInput"
-                    placeholder="Ej: Clínica Dental Elite, Marca de Ropa Minimalista..."
-                    class="w-full glass-input rounded-full py-5 px-8 text-lg placeholder:text-gray-700"
+                    placeholder="Escribe tu rubro o negocio..."
+                    class="w-full glass-input py-6 px-10 text-xl placeholder:text-gray-700"
                 >
                 <button 
                     onclick="generateStrategy()"
                     id="submitBtn"
-                    class="absolute right-2 top-2 bottom-2 bg-white text-black px-8 rounded-full font-bold text-sm hover:bg-blue-500 hover:text-white transition-all active:scale-95 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    class="absolute right-3 top-3 bottom-3 bg-white text-black px-10 rounded-full font-bold text-sm hover:bg-blue-500 hover:text-white transition-all active:scale-95 flex items-center gap-3 disabled:opacity-50"
                 >
                     <span id="btnText">Generar</span>
                     <span id="btnLoader" class="loader hidden"></span>
                 </button>
             </div>
-            <p id="limitMessage" class="hidden text-[10px] text-gray-600 mt-4 uppercase tracking-widest font-bold">Has alcanzado el límite de consultas por sesión</p>
+            <p id="limitMessage" class="hidden text-[10px] text-gray-600 mt-6 uppercase tracking-[0.3em] font-bold">Consulta única por sesión completada</p>
         </section>
 
-        <!-- Results Grid -->
-        <div id="resultsContainer" class="grid grid-cols-1 md:grid-cols-3 gap-6 opacity-0 transition-opacity duration-1000 mb-12">
+        <!-- Bento List Results (En Fila) -->
+        <div id="resultsContainer" class="flex flex-col gap-8 mb-16 opacity-0 transition-opacity duration-1000">
             <!-- Tip 1 -->
-            <article class="bento-card p-8">
-                <div class="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center mb-6">
-                    <span class="text-blue-500 font-bold text-xs">01</span>
+            <article class="bento-card p-10">
+                <div class="flex items-center space-x-3 mb-8">
+                    <span class="status-badge px-4 py-1.5 text-[10px] font-bold text-blue-400 uppercase tracking-widest">Solución 01</span>
+                    <span class="text-[10px] text-gray-600 font-bold uppercase tracking-widest">Estrategia</span>
                 </div>
-                <h3 id="title-1" class="text-lg font-bold mb-4 tracking-tight">...</h3>
-                <p id="desc-1" class="text-gray-500 text-sm leading-relaxed flex-grow">...</p>
+                <h3 id="title-1" class="text-2xl font-bold mb-4 tracking-tight">...</h3>
+                <p id="desc-1" class="text-lg text-gray-500 leading-relaxed max-w-3xl">...</p>
+                <div class="mt-6">
+                    <i class="fa-solid fa-lightbulb text-blue-500/50 text-xl"></i>
+                </div>
             </article>
 
             <!-- Tip 2 -->
-            <article class="bento-card p-8" style="transition-delay: 0.1s;">
-                <div class="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center mb-6">
-                    <span class="text-blue-500 font-bold text-xs">02</span>
+            <article class="bento-card p-10" style="transition-delay: 0.1s;">
+                <div class="flex items-center space-x-3 mb-8">
+                    <span class="status-badge px-4 py-1.5 text-[10px] font-bold text-purple-400 uppercase tracking-widest">Solución 02</span>
+                    <span class="text-[10px] text-gray-600 font-bold uppercase tracking-widest">Crecimiento</span>
                 </div>
-                <h3 id="title-2" class="text-lg font-bold mb-4 tracking-tight">...</h3>
-                <p id="desc-2" class="text-gray-500 text-sm leading-relaxed flex-grow">...</p>
+                <h3 id="title-2" class="text-2xl font-bold mb-4 tracking-tight">...</h3>
+                <p id="desc-2" class="text-lg text-gray-500 leading-relaxed max-w-3xl">...</p>
+                <div class="mt-6">
+                    <i class="fa-solid fa-chart-line text-purple-500/50 text-xl"></i>
+                </div>
             </article>
 
-            <!-- Tip 3: THE ELISEO FACTOR -->
-            <article class="bento-card p-8 special-border" style="transition-delay: 0.2s;">
-                <div class="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center mb-6">
-                    <i class="fa-solid fa-crown text-blue-500 text-xs"></i>
+            <!-- Tip 3: ELISEO FACTOR -->
+            <article class="bento-card p-10 premium-card" style="transition-delay: 0.2s;">
+                <div class="flex items-center justify-between mb-8">
+                    <div class="flex items-center space-x-3">
+                        <span class="status-badge px-4 py-1.5 text-[10px] font-bold text-white uppercase tracking-widest">Implementación de Élite</span>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <p class="text-[9px] font-bold text-blue-500 uppercase tracking-[0.4em] hidden md:block">Sello Eliseo Studio</p>
+                        <i class="fa-solid fa-crown text-blue-500 text-xl"></i>
+                    </div>
                 </div>
-                <h3 id="title-3" class="text-lg font-bold mb-4 tracking-tight text-white">...</h3>
-                <p id="desc-3" class="text-blue-100/60 text-sm leading-relaxed flex-grow">...</p>
-                <div class="mt-4 pt-4 border-t border-white/5">
-                    <span class="text-[9px] font-bold text-blue-400 uppercase tracking-widest">Sello Eliseo Studio</span>
+                <h3 id="title-3" class="text-2xl font-bold mb-4 tracking-tight">...</h3>
+                <p id="desc-3" class="text-lg text-blue-100/70 leading-relaxed max-w-3xl">...</p>
+                <div class="mt-6 md:hidden">
+                    <p class="text-[9px] font-bold text-blue-500 uppercase tracking-[0.4em]">Sello Eliseo Studio</p>
                 </div>
             </article>
         </div>
 
         <!-- Call to Action -->
-        <div id="whatsappContainer" class="text-center max-w-md mx-auto">
-            <p class="text-gray-500 text-xs mb-6 uppercase tracking-widest">¿Listo para escalar?</p>
+        <div id="whatsappContainer" class="max-w-md mx-auto text-center pb-20">
             <a 
                 id="whatsappBtn"
                 href="#" 
                 target="_blank"
-                class="inline-flex items-center justify-center gap-3 w-full py-5 bg-blue-600 text-white rounded-2xl font-bold text-sm transition-all btn-glow active:scale-95"
+                class="inline-flex items-center justify-center gap-4 w-full py-6 bg-blue-600 text-white rounded-[30px] font-bold text-sm hover:bg-blue-700 transition-all shadow-2xl shadow-blue-900/20 active:scale-95 group"
             >
                 <i class="fa-brands fa-whatsapp text-xl"></i>
                 Iniciar este proyecto con Eliseo
+                <i class="fa-solid fa-arrow-right ml-3 text-xs group-hover:translate-x-2 transition-transform"></i>
             </a>
+            <p class="mt-6 text-[10px] text-gray-600 uppercase tracking-[0.3em]">Hablemos sobre tu visión premium</p>
         </div>
 
-        <!-- Feedback UI -->
-        <div id="errorMessage" class="hidden mt-8 text-center p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
-            Ocurrió un error. <span id="errorDetail"></span>
+        <!-- Error Feedback -->
+        <div id="errorMessage" class="hidden mt-10 text-center p-6 rounded-[30px] bg-red-500/5 border border-red-500/20 text-red-400 text-xs">
+            <i class="fa-solid fa-circle-exclamation mr-2"></i> <span id="errorDetail">Error de conexión con la IA.</span>
         </div>
     </main>
 
-    <footer class="max-w-4xl mx-auto mt-24 text-center py-12 border-t border-white/5 opacity-30">
-        <p class="text-[9px] font-bold tracking-[0.6em] uppercase">Powered by Gemini AI — Optimized by Eliseo Studio</p>
+    <footer class="max-w-4xl mx-auto text-center py-12 border-t border-white/5 opacity-40">
+        <p class="text-[9px] font-bold tracking-[0.6em] uppercase">Built with Integrity & Excellence — Eliseo Studio</p>
     </footer>
 
     <script>
-        // Tu clave de API proporcionada
         const apiKey = "AIzaSyAO0ByY-NKubtjcdMYz7Ssemor6ZpUuB0k"; 
-        // Usamos gemini-1.5-flash para máxima compatibilidad externa
-        const model = "gemini-1.5-flash";
+        const model = "gemini-2.5-flash-preview-09-2025";
         let hasAsked = false;
 
         async function generateStrategy() {
@@ -226,34 +263,24 @@
             const btnText = document.getElementById('btnText');
             const btnLoader = document.getElementById('btnLoader');
             const results = document.getElementById('resultsContainer');
+            const whatsapp = document.getElementById('whatsappContainer');
             const errorMsg = document.getElementById('errorMessage');
             const errorDetail = document.getElementById('errorDetail');
-            const whatsappContainer = document.getElementById('whatsappContainer');
-            const limitMsg = document.getElementById('limitMessage');
 
             if (!input.value.trim()) return;
 
-            // UI State: Loading
+            // Loading State
             btn.disabled = true;
             btnText.classList.add('hidden');
             btnLoader.classList.remove('hidden');
-            results.classList.add('opacity-0');
             errorMsg.classList.add('hidden');
 
-            const systemPrompt = `Eres el Consultor de Estrategia Digital de Eliseo Studio. 
-            El usuario te dirá un tipo de negocio. Responde estrictamente en formato JSON con exactamente 3 consejos:
-            - Tip 1 y 2: Estrategias de marketing o negocio específicas para ese rubro.
-            - Tip 3: Debe ser sobre por qué ELISEO es el indicado (estilo Apple, premium, excelente UX y botones integrados).
-            
-            IMPORTANTE: Responde solo el JSON, sin texto adicional ni bloques de código.
-            Estructura JSON:
-            {
-                "tips": [
-                    {"title": "Título", "description": "Descripción"},
-                    {"title": "Título", "description": "Descripción"},
-                    {"title": "Implementación Premium", "description": "Explicación Eliseo"}
-                ]
-            }`;
+            const systemPrompt = `Eres el Consultor Senior de Eliseo Studio. 
+            El usuario dirá un negocio. Responde en JSON con 3 consejos:
+            - Tip 1 y 2: Estrategias de negocio/marketing para ese rubro.
+            - Tip 3: Debe explicar por qué ELISEO es el indicado, mencionando estilo Apple, diseño premium, UX de alto nivel y botones integrados.
+            IMPORTANTE: Responde SOLO el objeto JSON sin formato markdown ni texto extra.
+            Estructura: {"tips": [{"title": "...", "description": "..."}, {"title": "...", "description": "..."}, {"title": "...", "description": "..."}]}`;
 
             try {
                 const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
@@ -271,50 +298,45 @@
                 });
 
                 const data = await response.json();
-                
-                if (data.error) {
-                    throw new Error(data.error.message || "Error en la clave de API o modelo.");
-                }
+                if (data.error) throw new Error(data.error.message);
 
-                // Limpiar la respuesta por si viene con backticks de markdown
-                let rawText = data.candidates[0].content.parts[0].text;
-                rawText = rawText.replace(/```json/g, "").replace(/```/g, "").trim();
-                
-                const content = JSON.parse(rawText);
+                let raw = data.candidates[0].content.parts[0].text;
+                raw = raw.replace(/```json/g, "").replace(/```/g, "").trim();
+                const content = JSON.parse(raw);
 
-                // Update UI
-                content.tips.forEach((tip, index) => {
-                    document.getElementById(`title-${index + 1}`).innerText = tip.title;
-                    document.getElementById(`desc-${index + 1}`).innerText = tip.description;
+                // Populate UI
+                content.tips.forEach((tip, i) => {
+                    document.getElementById(`title-${i+1}`).innerText = tip.title;
+                    document.getElementById(`desc-${i+1}`).innerText = tip.description;
                 });
 
-                // Prep WhatsApp
-                let waMessage = `Hola Eliseo! Estuve usando tu IA para mi negocio: *${input.value}*.\n\nPropuesta:\n*${content.tips[2].title}*: ${content.tips[2].description}\n\nQuiero el estilo Apple y UX premium.`;
-                document.getElementById('whatsappBtn').href = `https://wa.me/3795041420?text=${encodeURIComponent(waMessage)}`;
+                // Set WhatsApp
+                const waBase = `Hola Eliseo! Use tu IA para mi negocio: *${input.value}*.\n\nMe interesó el punto:\n*${content.tips[2].title}*: ${content.tips[2].description}\n\n¿Cómo podemos empezar?`;
+                document.getElementById('whatsappBtn').href = `https://wa.me/3795041420?text=${encodeURIComponent(waBase)}`;
 
-                // Reveal
+                // Reveal Animations
                 results.classList.remove('opacity-0');
-                document.querySelectorAll('.bento-card').forEach(card => card.classList.add('visible'));
-                whatsappContainer.classList.add('visible');
+                document.querySelectorAll('.bento-card').forEach(c => c.classList.add('visible'));
+                whatsapp.classList.add('visible');
 
+                // Single use logic
                 hasAsked = true;
                 input.disabled = true;
-                limitMsg.classList.remove('hidden');
-                btnText.innerText = "Completado";
+                document.getElementById('limitMessage').classList.remove('hidden');
+                btnText.innerText = "Estrategia Generada";
 
-            } catch (error) {
-                console.error(error);
+            } catch (e) {
+                console.error(e);
                 errorMsg.classList.remove('hidden');
-                errorDetail.innerText = error.message;
+                errorDetail.innerText = e.message;
                 btn.disabled = false;
-                btnText.classList.remove('hidden');
-                btnLoader.classList.add('hidden');
             } finally {
                 btnLoader.classList.add('hidden');
+                btnText.classList.remove('hidden');
             }
         }
 
-        async function fetchWithRetry(url, options, retries = 3, backoff = 1000) {
+        async function fetchWithRetry(url, options, retries = 5, backoff = 1000) {
             const response = await fetch(url, options);
             if (!response.ok) {
                 const errData = await response.json().catch(() => ({}));
