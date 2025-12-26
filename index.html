@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Strategy | Eliseo Studio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&display=swap');
+        
+        body { 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #000; 
+            color: #fff;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        .glass-input {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        .glass-input:focus {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: #3b82f6;
+            outline: none;
+            box-shadow: 0 0 30px rgba(59, 130, 246, 0.1);
+        }
+
+        .glass-input:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .bento-card {
+            background: #0a0a0a;
+            border: 1px solid #1c1c1e;
+            border-radius: 32px;
+            overflow: hidden;
+            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+            opacity: 0;
+            transform: translateY(20px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .bento-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .bento-card:hover {
+            border-color: #333336;
+            background: #0f0f10;
+        }
+
+        .back-nav {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .loader {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #3b82f6;
+            border-bottom-color: transparent;
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+        }
+
+        @keyframes rotation {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #whatsappContainer {
+            transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+            transform: translateY(20px);
+            opacity: 0;
+        }
+
+        #whatsappContainer.visible {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .btn-glow:hover {
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+        }
+        
+        .special-border {
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            background: linear-gradient(145deg, #0a0a0a 0%, #0d1117 100%);
+        }
+    </style>
+</head>
+<body class="p-6 md:p-12">
+
+    <!-- Header Navigation -->
+    <nav class="max-w-4xl mx-auto flex items-center justify-between mb-16">
+        <a href="#" class="back-nav">
+            <i class="fa-solid fa-chevron-left text-gray-500 text-sm"></i>
+        </a>
+        <div class="text-right">
+            <p class="text-[9px] font-bold text-blue-500 uppercase tracking-[0.5em] mb-1">Intelligence Module</p>
+            <h1 class="text-xl font-medium tracking-tight">Estratega Digital AI</h1>
+        </div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto">
+        
+        <!-- Input Section -->
+        <section class="mb-16 text-center">
+            <h2 class="text-4xl md:text-5xl font-semibold mb-6 tracking-tighter">
+                Diseñemos tu <span class="text-blue-500">futuro digital.</span>
+            </h2>
+            <p class="text-gray-500 mb-10 text-sm md:text-base max-w-xl mx-auto">
+                Ingresa el nombre de tu negocio y nuestra inteligencia diseñará tu hoja de ruta personalizada con el sello de Eliseo Studio.
+            </p>
+            
+            <div class="relative max-w-2xl mx-auto group">
+                <input 
+                    type="text" 
+                    id="businessInput"
+                    placeholder="Ej: Clínica Dental Elite, Marca de Ropa Minimalista..."
+                    class="w-full glass-input rounded-full py-5 px-8 text-lg placeholder:text-gray-700"
+                >
+                <button 
+                    onclick="generateStrategy()"
+                    id="submitBtn"
+                    class="absolute right-2 top-2 bottom-2 bg-white text-black px-8 rounded-full font-bold text-sm hover:bg-blue-500 hover:text-white transition-all active:scale-95 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    <span id="btnText">Generar</span>
+                    <span id="btnLoader" class="loader hidden"></span>
+                </button>
+            </div>
+            <p id="limitMessage" class="hidden text-[10px] text-gray-600 mt-4 uppercase tracking-widest font-bold">Has alcanzado el límite de consultas por sesión</p>
+        </section>
+
+        <!-- Results Grid -->
+        <div id="resultsContainer" class="grid grid-cols-1 md:grid-cols-3 gap-6 opacity-0 transition-opacity duration-1000 mb-12">
+            <!-- Tip 1 -->
+            <article class="bento-card p-8">
+                <div class="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center mb-6">
+                    <span class="text-blue-500 font-bold text-xs">01</span>
+                </div>
+                <h3 id="title-1" class="text-lg font-bold mb-4 tracking-tight">...</h3>
+                <p id="desc-1" class="text-gray-500 text-sm leading-relaxed flex-grow">...</p>
+            </article>
+
+            <!-- Tip 2 -->
+            <article class="bento-card p-8" style="transition-delay: 0.1s;">
+                <div class="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center mb-6">
+                    <span class="text-blue-500 font-bold text-xs">02</span>
+                </div>
+                <h3 id="title-2" class="text-lg font-bold mb-4 tracking-tight">...</h3>
+                <p id="desc-2" class="text-gray-500 text-sm leading-relaxed flex-grow">...</p>
+            </article>
+
+            <!-- Tip 3: THE ELISEO FACTOR -->
+            <article class="bento-card p-8 special-border" style="transition-delay: 0.2s;">
+                <div class="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center mb-6">
+                    <i class="fa-solid fa-crown text-blue-500 text-xs"></i>
+                </div>
+                <h3 id="title-3" class="text-lg font-bold mb-4 tracking-tight text-white">...</h3>
+                <p id="desc-3" class="text-blue-100/60 text-sm leading-relaxed flex-grow">...</p>
+                <div class="mt-4 pt-4 border-t border-white/5">
+                    <span class="text-[9px] font-bold text-blue-400 uppercase tracking-widest">Sello Eliseo Studio</span>
+                </div>
+            </article>
+        </div>
+
+        <!-- Call to Action -->
+        <div id="whatsappContainer" class="text-center max-w-md mx-auto">
+            <p class="text-gray-500 text-xs mb-6 uppercase tracking-widest">¿Listo para escalar?</p>
+            <a 
+                id="whatsappBtn"
+                href="#" 
+                target="_blank"
+                class="inline-flex items-center justify-center gap-3 w-full py-5 bg-blue-600 text-white rounded-2xl font-bold text-sm transition-all btn-glow active:scale-95"
+            >
+                <i class="fa-brands fa-whatsapp text-xl"></i>
+                Iniciar este proyecto con Eliseo
+            </a>
+        </div>
+
+        <!-- Feedback UI -->
+        <div id="errorMessage" class="hidden mt-8 text-center p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+            Ocurrió un error. Por favor intenta de nuevo.
+        </div>
+    </main>
+
+    <footer class="max-w-4xl mx-auto mt-24 text-center py-12 border-t border-white/5 opacity-30">
+        <p class="text-[9px] font-bold tracking-[0.6em] uppercase">Powered by Gemini AI — Optimized by Eliseo Studio</p>
+    </footer>
+
+    <script>
+        const apiKey = ""; // Inyectado por el entorno
+        const model = "gemini-2.5-flash-preview-09-2025";
+        let hasAsked = false;
+
+        async function generateStrategy() {
+            if (hasAsked) return;
+
+            const input = document.getElementById('businessInput');
+            const btn = document.getElementById('submitBtn');
+            const btnText = document.getElementById('btnText');
+            const btnLoader = document.getElementById('btnLoader');
+            const results = document.getElementById('resultsContainer');
+            const errorMsg = document.getElementById('errorMessage');
+            const whatsappContainer = document.getElementById('whatsappContainer');
+            const limitMsg = document.getElementById('limitMessage');
+
+            if (!input.value.trim()) return;
+
+            btn.disabled = true;
+            btnText.classList.add('hidden');
+            btnLoader.classList.remove('hidden');
+            results.classList.add('opacity-0');
+            errorMsg.classList.add('hidden');
+
+            const systemPrompt = `Eres el Consultor de Estrategia de Eliseo Studio. 
+            El usuario te dirá un tipo de negocio. Responde en JSON con 3 consejos:
+            - Tip 1 y 2: Estrategias de marketing o negocio específicas para ese rubro.
+            - Tip 3: DEBE SER sobre cómo ELISEO es el indicado para implementar esto. Enfócate en su estilo "Apple", diseño premium, excelencia en UX y botones integrados/interactivos que convierten. Explica por qué su estética minimalista y quirúrgica es lo que este negocio necesita para destacar.
+            
+            Estructura JSON:
+            {
+                "tips": [
+                    {"title": "Título estratégico", "description": "Descripción clara"},
+                    {"title": "Título estratégico", "description": "Descripción clara"},
+                    {"title": "Implementación Premium", "description": "Explicación de por qué Eliseo es el indicado con su enfoque Apple/UX"}
+                ]
+            }`;
+
+            try {
+                const response = await fetchWithRetry(
+                    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+                    {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{ parts: [{ text: `Negocio: ${input.value}` }] }],
+                            systemInstruction: { parts: [{ text: systemPrompt }] },
+                            generationConfig: { responseMimeType: "application/json" }
+                        })
+                    }
+                );
+
+                const data = await response.json();
+                const content = JSON.parse(data.candidates[0].content.parts[0].text);
+
+                content.tips.forEach((tip, index) => {
+                    document.getElementById(`title-${index + 1}`).innerText = tip.title;
+                    document.getElementById(`desc-${index + 1}`).innerText = tip.description;
+                });
+
+                let waMessage = `Hola Eliseo! Estuve usando tu IA de estrategia digital para mi negocio: *${input.value}*.\n\nMe convenció tu propuesta de implementación:\n`;
+                waMessage += `\n*${content.tips[2].title}*: ${content.tips[2].description}`;
+                waMessage += `\n\nQuiero que mi marca tenga ese estilo Apple y UX premium. ¿Podemos hablar?`;
+
+                const waLink = `https://wa.me/3795041420?text=${encodeURIComponent(waMessage)}`;
+                document.getElementById('whatsappBtn').href = waLink;
+
+                results.classList.remove('opacity-0');
+                document.querySelectorAll('.bento-card').forEach(card => card.classList.add('visible'));
+                whatsappContainer.classList.add('visible');
+
+                hasAsked = true;
+                input.disabled = true;
+                limitMsg.classList.remove('hidden');
+
+            } catch (error) {
+                console.error(error);
+                errorMsg.classList.remove('hidden');
+                btn.disabled = false;
+                btnText.classList.remove('hidden');
+                btnLoader.classList.add('hidden');
+            } finally {
+                if (hasAsked) {
+                    btnLoader.classList.add('hidden');
+                    btnText.classList.remove('hidden');
+                    btnText.innerText = "Estrategia Lista";
+                }
+            }
+        }
+
+        async function fetchWithRetry(url, options, retries = 5, backoff = 1000) {
+            try {
+                const response = await fetch(url, options);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return response;
+            } catch (err) {
+                if (retries <= 0) throw err;
+                await new Promise(resolve => setTimeout(resolve, backoff));
+                return fetchWithRetry(url, options, retries - 1, backoff * 2);
+            }
+        }
+
+        document.getElementById('businessInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') generateStrategy();
+        });
+    </script>
+</body>
+</html>
