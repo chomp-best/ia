@@ -3,286 +3,254 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Strategy | Eliseo Studio</title>
+    <title>Estratega IA | Eliseo Studio</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- jsPDF Library for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap');
         
         body { 
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background-color: #000; 
             color: #fff;
             -webkit-font-smoothing: antialiased;
-            overflow-x: hidden;
-            min-height: 100vh;
         }
 
-        /* Estética Bento Card Original */
-        .bento-card {
-            background: #0a0a0a;
-            border: 1px solid #1c1c1e;
-            border-radius: 40px;
-            overflow: hidden;
-            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
-            display: flex;
-            flex-direction: column;
-            opacity: 0;
-            transform: translateY(30px);
+        .apple-container {
+            max-width: 500px;
             width: 100%;
         }
 
-        .bento-card.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .bento-card:hover {
-            border-color: #333336;
-            transform: translateY(-4px);
-            background: #0f0f10;
-        }
-
-        /* Variación para el consejo premium */
-        .premium-card {
-            border: 1px solid rgba(59, 130, 246, 0.5) !important;
-            background: linear-gradient(135deg, #0a0a0a 0%, #0d1117 100%);
-        }
-        
-        .premium-card:hover {
-            border-color: rgba(59, 130, 246, 0.8) !important;
-            box-shadow: 0 0 30px rgba(59, 130, 246, 0.1);
-        }
-
-        /* Input con Glassmorphism */
-        .glass-input {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(15px);
+        .glass-panel {
+            background: rgba(28, 28, 30, 0.6);
+            backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 100px;
+            border-radius: 40px;
+        }
+
+        .input-dark {
+            background: #000;
+            border: 1px solid #1c1c1e;
+            border-radius: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .input-dark:focus {
+            border-color: #0071e3;
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.1);
+        }
+
+        .btn-ai {
+            background: #fff;
+            color: #000;
             transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
         }
 
-        .glass-input:focus {
-            background: rgba(255, 255, 255, 0.06);
-            border-color: #3b82f6;
-            outline: none;
-            box-shadow: 0 0 40px rgba(59, 130, 246, 0.15);
+        .btn-ai:hover:not(:disabled) {
+            transform: translateY(-2px);
+            background: #f5f5f7;
         }
 
-        /* Navegación Circular */
-        .back-nav {
+        /* Invoice Style */
+        .invoice-box {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px dashed rgba(255, 255, 255, 0.15);
+            border-radius: 24px;
+            font-family: 'JetBrains+Mono', monospace;
+            padding: 1.5rem;
+        }
+
+        /* Tip Cards */
+        .tip-card {
             background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 24px;
+            padding: 1.25rem 1.5rem;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0;
+            transform: translateY(10px);
             cursor: pointer;
-            text-decoration: none;
+            overflow: hidden;
+            max-height: 80px;
         }
 
-        .back-nav:hover {
-            background: rgba(255, 255, 255, 0.08);
-            transform: scale(1.1);
+        .tip-card.show { opacity: 1; transform: translateY(0); }
+        .tip-card.expanded {
+            max-height: 600px;
+            background: rgba(255, 255, 255, 0.07);
+            border-color: rgba(0, 113, 227, 0.4);
         }
 
-        .status-badge {
-            background: rgba(255, 255, 255, 0.04);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 100px;
+        .tip-card.premium-tip {
+            border-color: rgba(168, 85, 247, 0.4);
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.04) 0%, rgba(168, 85, 247, 0.02) 100%);
         }
+
+        .tip-number { font-size: 10px; font-weight: 800; color: #0071e3; text-transform: uppercase; letter-spacing: 0.1em; }
+        .premium-tip .tip-number { color: #a855f7; }
+
+        .expand-icon { transition: transform 0.4s ease; font-size: 10px; color: #444; }
+        .expanded .expand-icon { transform: rotate(45deg); color: #0071e3; }
+        .premium-tip.expanded .expand-icon { color: #a855f7; }
 
         .loader {
-            width: 18px;
-            height: 18px;
-            border: 2px solid #3b82f6;
-            border-bottom-color: transparent;
+            width: 40px; height: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #0071e3;
             border-radius: 50%;
-            display: inline-block;
-            animation: rotation 1s linear infinite;
+            animation: spin 1s linear infinite;
         }
 
-        @keyframes rotation {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        #whatsappContainer {
-            transition: all 1s cubic-bezier(0.23, 1, 0.32, 1);
-            opacity: 0;
-            transform: translateY(20px);
-            pointer-events: none;
-        }
-
-        #whatsappContainer.visible {
-            opacity: 1;
-            transform: translateY(0);
-            pointer-events: auto;
-        }
-
-        .fade-up {
-            animation: fadeUp 0.8s cubic-bezier(0.23, 1, 0.32, 1) forwards;
-        }
-
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .fade-up { animation: fadeUp 0.8s ease-out forwards; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body class="p-6 md:p-16">
+<body class="min-h-screen flex items-center justify-center p-6 bg-[#050505]">
 
-    <!-- Global Navigation -->
-    <nav class="max-w-4xl mx-auto flex items-center justify-between mb-20 fade-up">
-        <!-- Botón de volver actualizado con redirección directa -->
-        <a href="https://chomp-best.github.io/proyectos/" class="back-nav" id="backButton" target="_top">
-            <i class="fa-solid fa-chevron-left text-gray-400"></i>
-        </a>
-        <div class="text-right">
-            <p class="text-[10px] font-bold text-blue-500 uppercase tracking-[0.4em] mb-2">Showcase v2.0</p>
-            <h1 class="text-3xl font-semibold tracking-tighter">Proyectos de Élite</h1>
-        </div>
-    </nav>
-
-    <main class="max-w-4xl mx-auto">
+    <div class="apple-container fade-up">
         
-        <!-- Input Hero Section -->
-        <section class="text-center mb-24 fade-up" style="animation-delay: 0.1s;">
-            <h2 class="text-4xl md:text-6xl font-bold mb-8 tracking-tighter leading-tight">
-                Diseñemos tu <br>
-                <span class="text-blue-500">futuro digital.</span>
-            </h2>
-            <p class="text-gray-500 mb-10 text-sm md:text-base max-w-xl mx-auto">
-                Ingresa el nombre de tu negocio o rubro y nuestra inteligencia diseñará 3 pilares clave para dominar tu mercado online.
-            </p>
+        <!-- Header -->
+        <div class="text-center mb-10">
+            <div class="w-14 h-14 bg-white rounded-2xl mx-auto flex items-center justify-center mb-6 shadow-xl">
+                <i class="fa-solid fa-wand-magic-sparkles text-black text-2xl"></i>
+            </div>
+            <h1 class="text-3xl font-bold tracking-tighter mb-2">Estratega IA</h1>
+            <p class="text-sm text-gray-500">Transformando empresas con precisión digital.</p>
+        </div>
+
+        <div class="glass-panel p-8 md:p-10">
             
-            <div class="relative max-w-2xl mx-auto">
-                <input 
-                    type="text" 
-                    id="businessInput"
-                    placeholder="Escribe tu rubro o negocio..."
-                    class="w-full glass-input py-6 px-10 text-xl placeholder:text-gray-700"
-                >
-                <button 
-                    onclick="generateStrategy()"
-                    id="submitBtn"
-                    class="absolute right-3 top-3 bottom-3 bg-white text-black px-10 rounded-full font-bold text-sm hover:bg-blue-500 hover:text-white transition-all active:scale-95 flex items-center gap-3 disabled:opacity-50"
-                >
-                    <span id="btnText">Generar</span>
-                    <span id="btnLoader" class="loader hidden"></span>
+            <!-- Form State -->
+            <div id="form-state">
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Tu Nombre</label>
+                        <input type="text" id="ownerName" 
+                            class="input-dark w-full p-4 text-sm placeholder:text-gray-800"
+                            placeholder="Ej: Eliseo Rodriguez">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Rubro del Negocio</label>
+                        <input type="text" id="businessNiche" 
+                            class="input-dark w-full p-4 text-sm placeholder:text-gray-800"
+                            placeholder="Ej: Real Estate, Moda, Gastronomía...">
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">¿A qué se dedica tu empresa?</label>
+                        <textarea id="businessInput" 
+                            class="input-dark w-full h-32 p-4 text-sm leading-relaxed resize-none placeholder:text-gray-800"
+                            placeholder="Describe brevemente qué buscas lograr..."></textarea>
+                    </div>
+                </div>
+                
+                <button onclick="generateStrategy()" id="submitBtn" class="btn-ai w-full py-4 rounded-2xl font-bold text-sm mt-8">
+                    Generar Análisis Estratégico
                 </button>
             </div>
-            <p id="limitMessage" class="hidden text-[10px] text-gray-600 mt-6 uppercase tracking-[0.3em] font-bold">Consulta única por sesión completada</p>
-        </section>
 
-        <!-- Bento List Results -->
-        <div id="resultsContainer" class="flex flex-col gap-8 mb-16 opacity-0 transition-opacity duration-1000">
-            <!-- Tip 1 -->
-            <article class="bento-card p-10">
-                <div class="flex items-center space-x-3 mb-8">
-                    <span class="status-badge px-4 py-1.5 text-[10px] font-bold text-blue-400 uppercase tracking-widest">Solución 01</span>
-                    <span class="text-[10px] text-gray-600 font-bold uppercase tracking-widest">Estrategia</span>
-                </div>
-                <h3 id="title-1" class="text-2xl font-bold mb-4 tracking-tight">...</h3>
-                <p id="desc-1" class="text-lg text-gray-500 leading-relaxed max-w-3xl">...</p>
-                <div class="mt-6">
-                    <i class="fa-solid fa-lightbulb text-blue-500/50 text-xl"></i>
-                </div>
-            </article>
+            <!-- Loading State -->
+            <div id="loading-state" class="hidden py-10 text-center">
+                <div class="loader mx-auto mb-6"></div>
+                <p class="text-sm text-gray-400 font-medium">Gemini está procesando tu visión...</p>
+            </div>
 
-            <!-- Tip 2 -->
-            <article class="bento-card p-10" style="transition-delay: 0.1s;">
-                <div class="flex items-center space-x-3 mb-8">
-                    <span class="status-badge px-4 py-1.5 text-[10px] font-bold text-purple-400 uppercase tracking-widest">Solución 02</span>
-                    <span class="text-[10px] text-gray-600 font-bold uppercase tracking-widest">Crecimiento</span>
-                </div>
-                <h3 id="title-2" class="text-2xl font-bold mb-4 tracking-tight">...</h3>
-                <p id="desc-2" class="text-lg text-gray-500 leading-relaxed max-w-3xl">...</p>
-                <div class="mt-6">
-                    <i class="fa-solid fa-chart-line text-purple-500/50 text-xl"></i>
-                </div>
-            </article>
-
-            <!-- Tip 3: ELISEO FACTOR -->
-            <article class="bento-card p-10 premium-card" style="transition-delay: 0.2s;">
+            <!-- Result State -->
+            <div id="result-state" class="hidden">
                 <div class="flex items-center justify-between mb-8">
-                    <div class="flex items-center space-x-3">
-                        <span class="status-badge px-4 py-1.5 text-[10px] font-bold text-white uppercase tracking-widest">Implementación de Élite</span>
+                    <h2 class="text-lg font-bold text-white">Hoja de Ruta</h2>
+                    <span class="text-[10px] font-bold text-purple-500 uppercase tracking-widest bg-purple-500/10 px-3 py-1 rounded-full">Visión IA</span>
+                </div>
+                
+                <!-- Container for Cards -->
+                <div id="tips-container" class="space-y-4 mb-8">
+                    <!-- Cards injected here -->
+                </div>
+
+                <!-- Invoice Style Summary -->
+                <div id="invoice-summary" class="invoice-box mb-10">
+                    <div class="flex justify-between items-center mb-4 pb-2 border-b border-white/10">
+                        <span class="text-[10px] font-bold text-gray-500">RESUMEN_EJECUTIVO</span>
+                        <span class="text-[10px] text-gray-500" id="invoiceVersion">v1.0</span>
                     </div>
-                    <div class="flex items-center space-x-4">
-                        <p class="text-[9px] font-bold text-blue-500 uppercase tracking-[0.4em] hidden md:block">Sello Eliseo Studio</p>
-                        <i class="fa-solid fa-crown text-blue-500 text-xl"></i>
+                    <div id="invoice-items" class="space-y-3 text-[11px]">
+                        <!-- Items injected here -->
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-white/10 flex justify-between items-center">
+                        <span class="text-[10px] font-bold text-purple-400">STATUS:</span>
+                        <span class="text-[10px] font-bold text-white">LISTO_PARA_EJECUTAR</span>
                     </div>
                 </div>
-                <h3 id="title-3" class="text-2xl font-bold mb-4 tracking-tight">...</h3>
-                <p id="desc-3" class="text-lg text-blue-100/70 leading-relaxed max-w-3xl">...</p>
-                <div class="mt-6 md:hidden">
-                    <p class="text-[9px] font-bold text-blue-500 uppercase tracking-[0.4em]">Sello Eliseo Studio</p>
+
+                <div class="space-y-3">
+                    <a id="whatsappBtn" href="#" target="_blank" class="bg-[#25d366] text-white w-full py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-3 shadow-lg shadow-green-500/20">
+                        <i class="fa-brands fa-whatsapp text-lg"></i>
+                        Iniciar Proyecto vía WhatsApp
+                    </a>
+                    
+                    <button onclick="downloadPDF()" class="bg-white/5 border border-white/10 text-white w-full py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-3 hover:bg-white/10 transition-all">
+                        <i class="fa-solid fa-file-pdf text-lg text-red-500"></i>
+                        Descargar Estrategia Detallada
+                    </button>
+
+                    <p class="text-center text-[10px] font-bold text-gray-600 uppercase tracking-[0.2em] pt-4">Límite de consulta alcanzado</p>
                 </div>
-            </article>
+            </div>
+
         </div>
 
-        <!-- Call to Action -->
-        <div id="whatsappContainer" class="max-w-md mx-auto text-center pb-20">
-            <a 
-                id="whatsappBtn"
-                href="#" 
-                target="_blank"
-                class="inline-flex items-center justify-center gap-4 w-full py-6 bg-blue-600 text-white rounded-[30px] font-bold text-sm hover:bg-blue-700 transition-all shadow-2xl shadow-blue-900/20 active:scale-95 group"
-            >
-                <i class="fa-brands fa-whatsapp text-xl"></i>
-                Iniciar este proyecto con Eliseo
-                <i class="fa-solid fa-arrow-right ml-3 text-xs group-hover:translate-x-2 transition-transform"></i>
+        <!-- Footer -->
+        <div class="mt-12 text-center">
+            <a href="https://chomp-best.github.io/proyectos/" class="text-[10px] font-bold text-gray-700 uppercase tracking-widest hover:text-gray-400 transition-colors" target="_parent">
+                <i class="fa-solid fa-chevron-left mr-2"></i> Regresar a Proyectos
             </a>
-            <p class="mt-6 text-[10px] text-gray-600 uppercase tracking-[0.3em]">Hablemos sobre tu visión premium</p>
         </div>
-
-        <!-- Error Feedback -->
-        <div id="errorMessage" class="hidden mt-10 text-center p-6 rounded-[30px] bg-red-500/5 border border-red-500/20 text-red-400 text-xs">
-            <i class="fa-solid fa-circle-exclamation mr-2"></i> <span id="errorDetail">Error de conexión con la IA.</span>
-        </div>
-    </main>
-
-    <footer class="max-w-4xl mx-auto text-center py-12 border-t border-white/5 opacity-40">
-        <p class="text-[9px] font-bold tracking-[0.6em] uppercase">Built with Integrity & Excellence — Eliseo Studio</p>
-    </footer>
+    </div>
 
     <script>
-        const apiKey = "AIzaSyAO0ByY-NKubtjcdMYz7Ssemor6ZpUuB0k"; 
+        const apiKey = ""; 
         const model = "gemini-2.5-flash-preview-09-2025";
+        const whatsappNumber = "3795041420";
+        const personalEmail = "olivellaeliseo@gmail.com";
         let hasAsked = false;
+        let lastAnalysis = null;
 
         async function generateStrategy() {
             if (hasAsked) return;
 
-            const input = document.getElementById('businessInput');
-            const btn = document.getElementById('submitBtn');
-            const btnText = document.getElementById('btnText');
-            const btnLoader = document.getElementById('btnLoader');
-            const results = document.getElementById('resultsContainer');
-            const whatsapp = document.getElementById('whatsappContainer');
-            const errorMsg = document.getElementById('errorMessage');
-            const errorDetail = document.getElementById('errorDetail');
+            const name = document.getElementById('ownerName').value;
+            const niche = document.getElementById('businessNiche').value;
+            const desc = document.getElementById('businessInput').value;
 
-            if (!input.value.trim()) return;
+            const formState = document.getElementById('form-state');
+            const loadingState = document.getElementById('loading-state');
+            const resultState = document.getElementById('result-state');
+            const tipsContainer = document.getElementById('tips-container');
+            const invoiceItems = document.getElementById('invoice-items');
+            const whatsappBtn = document.getElementById('whatsappBtn');
 
-            btn.disabled = true;
-            btnText.classList.add('hidden');
-            btnLoader.classList.remove('hidden');
-            errorMsg.classList.add('hidden');
+            if (!name.trim() || !niche.trim() || !desc.trim()) {
+                alert("Por favor, completa todos los campos para continuar.");
+                return;
+            }
 
-            const systemPrompt = `Eres el Consultor Senior de Eliseo Studio. 
-            El usuario dirá un negocio. Responde en JSON con 3 consejos:
-            - Tip 1 y 2: Estrategias de negocio/marketing para ese rubro.
-            - Tip 3: Debe explicar por qué ELISEO es el indicado, mencionando estilo Apple, diseño premium, UX de alto nivel y botones integrados.
-            IMPORTANTE: Responde SOLO el objeto JSON sin formato markdown ni texto extra.
-            Estructura: {"tips": [{"title": "...", "description": "..."}, {"title": "...", "description": "..."}, {"title": "...", "description": "..."}]}`;
+            formState.classList.add('hidden');
+            loadingState.classList.remove('hidden');
+
+            const systemPrompt = `Eres el estratega senior de Eliseo Studio. Analiza la actividad de la empresa y genera 3 pilares tácticos.
+            IMPORTANTE: Responde estrictamente en JSON:
+            {
+                "tips": [
+                    {"title": "Diseño Visual", "desc": "Descripción detallada", "icon": "fa-palette"},
+                    {"title": "Conversión UX", "desc": "Descripción detallada", "icon": "fa-chart-pie"},
+                    {"title": "Implementación Elite", "desc": "Descripción sobre el sello Eliseo (estilo Apple, 7 días)", "icon": "fa-crown"}
+                ]
+            }`;
 
             try {
                 const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
@@ -291,64 +259,198 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: `Negocio: ${input.value}` }] }],
+                        contents: [{ parts: [{ text: `Dueño: ${name}, Rubro: ${niche}, Empresa: ${desc}` }] }],
                         systemInstruction: { parts: [{ text: systemPrompt }] },
-                        generationConfig: { 
-                            responseMimeType: "application/json"
-                        }
+                        generationConfig: { responseMimeType: "application/json" }
                     })
                 });
 
                 const data = await response.json();
-                if (data.error) throw new Error(data.error.message);
+                const jsonResponse = JSON.parse(data.candidates[0].content.parts[0].text);
+                lastAnalysis = { ...jsonResponse, name, niche, desc };
 
-                let raw = data.candidates[0].content.parts[0].text;
-                raw = raw.replace(/```json/g, "").replace(/```/g, "").trim();
-                const content = JSON.parse(raw);
+                if (jsonResponse.tips) {
+                    tipsContainer.innerHTML = '';
+                    invoiceItems.innerHTML = '';
 
-                content.tips.forEach((tip, i) => {
-                    document.getElementById(`title-${i+1}`).innerText = tip.title;
-                    document.getElementById(`desc-${i+1}`).innerText = tip.description;
-                });
+                    const headerItem = document.createElement('div');
+                    headerItem.className = 'mb-4 text-gray-400 border-b border-white/5 pb-2';
+                    headerItem.innerHTML = `CLIENTE: ${name.toUpperCase()}<br>RUBRO: ${niche.toUpperCase()}`;
+                    invoiceItems.appendChild(headerItem);
 
-                const waBase = `Hola Eliseo! Use tu IA para mi negocio: *${input.value}*.\n\nMe interesó el punto:\n*${content.tips[2].title}*: ${content.tips[2].description}\n\n¿Cómo podemos empezar?`;
-                document.getElementById('whatsappBtn').href = `https://wa.me/3795041420?text=${encodeURIComponent(waBase)}`;
+                    jsonResponse.tips.forEach((tip, index) => {
+                        const isLast = index === 2;
+                        const card = document.createElement('div');
+                        card.className = `tip-card ${isLast ? 'premium-tip' : ''}`;
+                        card.style.transitionDelay = `${index * 150}ms`;
+                        card.innerHTML = `
+                            <div class="tip-header flex justify-between items-start">
+                                <div class="flex-grow">
+                                    <span class="tip-number">${isLast ? 'Sello Eliseo Studio' : `Estrategia 0${index + 1}`}</span>
+                                    <h3 class="font-bold text-white tracking-tight">${tip.title}</h3>
+                                </div>
+                                <div class="flex flex-col items-end gap-2">
+                                    <i class="fa-solid ${tip.icon} ${isLast ? 'text-purple-500' : 'text-gray-600'} text-sm"></i>
+                                    <i class="fa-solid fa-plus expand-icon"></i>
+                                </div>
+                            </div>
+                            <div class="tip-content">
+                                <p class="text-xs text-gray-400 leading-relaxed">${tip.desc}</p>
+                            </div>
+                        `;
+                        card.onclick = () => card.classList.toggle('expanded');
+                        tipsContainer.appendChild(card);
+                        setTimeout(() => card.classList.add('show'), 50);
 
-                results.classList.remove('opacity-0');
-                document.querySelectorAll('.bento-card').forEach(c => c.classList.add('visible'));
-                whatsapp.classList.add('visible');
+                        const item = document.createElement('div');
+                        item.className = 'flex justify-between items-center opacity-80';
+                        item.innerHTML = `
+                            <span><i class="fa-solid ${tip.icon} mr-2"></i> ${tip.title.toUpperCase()}</span>
+                            <span class="text-gray-600">[OK]</span>
+                        `;
+                        invoiceItems.appendChild(item);
+                    });
 
-                hasAsked = true;
-                input.disabled = true;
-                document.getElementById('limitMessage').classList.remove('hidden');
-                btnText.innerText = "Estrategia Generada";
+                    loadingState.classList.add('hidden');
+                    resultState.classList.remove('hidden');
 
-            } catch (e) {
-                console.error(e);
-                errorMsg.classList.remove('hidden');
-                errorDetail.innerText = e.message;
-                btn.disabled = false;
-            } finally {
-                btnLoader.classList.add('hidden');
-                btnText.classList.remove('hidden');
+                    let waText = `Hola Eliseo! Soy *${name}* del rubro *${niche}*.\nEstuve usando el Estratega IA para mi empresa: ${desc}\n\n*Resultados del Análisis:*`;
+                    jsonResponse.tips.forEach((t, i) => waText += `\n\n${i+1}. *${t.title}*: ${t.desc}`);
+                    whatsappBtn.href = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(waText)}`;
+
+                    hasAsked = true;
+                }
+
+            } catch (error) {
+                console.error(error);
+                alert("Error de conexión. Inténtalo de nuevo.");
+                loadingState.classList.add('hidden');
+                formState.classList.remove('hidden');
             }
+        }
+
+        function downloadPDF() {
+            if (!lastAnalysis) return;
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const { name, niche, tips, desc } = lastAnalysis;
+
+            // Header
+            doc.setFillColor(0, 0, 0);
+            doc.rect(0, 0, 210, 40, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(22);
+            doc.text("ELISEO STUDIO", 20, 25);
+            doc.setFontSize(10);
+            doc.text("ESTRATEGA IA - BRIEF DE NEGOCIO", 130, 25);
+
+            // Client Info
+            doc.setTextColor(0, 0, 0);
+            doc.setFontSize(11);
+            doc.text(`CLIENTE: ${name.toUpperCase()}`, 20, 50);
+            doc.text(`RUBRO: ${niche.toUpperCase()}`, 20, 57);
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(9);
+            doc.text("FECHA: " + new Date().toLocaleDateString(), 155, 50);
+
+            // Business Description Section
+            doc.setFont("helvetica", "bold");
+            doc.text("DESCRIPCIÓN DEL NEGOCIO:", 20, 68);
+            doc.setFont("helvetica", "normal");
+            const descLines = doc.splitTextToSize(desc, 170);
+            doc.text(descLines, 20, 73);
+
+            // Divider
+            let currentY = 73 + (descLines.length * 5) + 5;
+            doc.setDrawColor(230, 230, 230);
+            doc.line(20, currentY, 190, currentY);
+            currentY += 15;
+
+            // Analysis content
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(14);
+            doc.text("HOJA DE RUTA ESTRATÉGICA", 20, currentY);
+            currentY += 12;
+
+            tips.forEach((tip, i) => {
+                doc.setFontSize(11);
+                doc.setTextColor(0, 113, 227);
+                doc.text(`PILAR 0${i+1}: ${tip.title.toUpperCase()}`, 20, currentY);
+                currentY += 7;
+                doc.setTextColor(60, 60, 60);
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(10);
+                
+                const lines = doc.splitTextToSize(tip.desc, 170);
+                doc.text(lines, 20, currentY);
+                currentY += (lines.length * 5) + 12;
+
+                if(currentY > 260) {
+                    doc.addPage();
+                    currentY = 20;
+                }
+            });
+
+            // Contact Block
+            if (currentY > 230) {
+                doc.addPage();
+                currentY = 20;
+            }
+
+            doc.setFillColor(245, 245, 247);
+            doc.rect(20, currentY, 170, 35, 'F');
+            doc.setTextColor(0, 0, 0);
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(11);
+            doc.text("LISTO PARA EJECUTAR", 30, currentY + 12);
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(9);
+            doc.text(`WhatsApp: +${whatsappNumber}`, 30, currentY + 20);
+            doc.text(`Email: ${personalEmail}`, 30, currentY + 26);
+
+            currentY += 50;
+
+            // Introspective Legend
+            doc.setDrawColor(168, 85, 247);
+            doc.setLineWidth(0.5);
+            doc.line(20, currentY, 40, currentY);
+            
+            currentY += 10;
+            doc.setFont("helvetica", "italic");
+            doc.setFontSize(9);
+            doc.setTextColor(120, 120, 120);
+            
+            const introspectiveMsg = "Este análisis no es solo el resultado de algoritmos procesando datos; es el reflejo de una visión que busca trascender lo convencional. En Eliseo Studio, creemos que el diseño premium y la tecnología no son fines, sino el lenguaje con el que construimos el futuro de tu negocio. Gracias por confiar en mi criterio y en esta herramienta. Lo que hoy es una hoja de ruta, mañana puede ser el estándar de tu industria.";
+            
+            const introLines = doc.splitTextToSize(introspectiveMsg, 170);
+            doc.text(introLines, 20, currentY);
+            
+            currentY += (introLines.length * 4) + 10;
+            doc.setFont("helvetica", "bold");
+            doc.setTextColor(168, 85, 247);
+            doc.text("CON GRATITUD, ELISEO.", 20, currentY);
+
+            doc.save(`Estrategia_${name.replace(/\s+/g, '_')}.pdf`);
         }
 
         async function fetchWithRetry(url, options, retries = 5, backoff = 1000) {
             const response = await fetch(url, options);
             if (!response.ok) {
-                const errData = await response.json().catch(() => ({}));
-                if (retries > 0 && response.status >= 500) {
+                if (retries > 0) {
                     await new Promise(r => setTimeout(r, backoff));
                     return fetchWithRetry(url, options, retries - 1, backoff * 2);
                 }
-                throw new Error(errData.error?.message || `HTTP ${response.status}`);
+                throw new Error('API Error');
             }
             return response;
         }
 
         document.getElementById('businessInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') generateStrategy();
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                generateStrategy();
+            }
         });
     </script>
 </body>
