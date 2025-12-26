@@ -82,6 +82,8 @@
             align-items: center;
             justify-content: center;
             transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
         }
 
         .back-nav:hover {
@@ -138,7 +140,8 @@
 
     <!-- Global Navigation -->
     <nav class="max-w-4xl mx-auto flex items-center justify-between mb-20 fade-up">
-        <a href="#" class="back-nav">
+        <!-- Botón de volver actualizado con redirección directa -->
+        <a href="https://chomp-best.github.io/proyectos/" class="back-nav" id="backButton" target="_top">
             <i class="fa-solid fa-chevron-left text-gray-400"></i>
         </a>
         <div class="text-right">
@@ -178,7 +181,7 @@
             <p id="limitMessage" class="hidden text-[10px] text-gray-600 mt-6 uppercase tracking-[0.3em] font-bold">Consulta única por sesión completada</p>
         </section>
 
-        <!-- Bento List Results (En Fila) -->
+        <!-- Bento List Results -->
         <div id="resultsContainer" class="flex flex-col gap-8 mb-16 opacity-0 transition-opacity duration-1000">
             <!-- Tip 1 -->
             <article class="bento-card p-10">
@@ -269,7 +272,6 @@
 
             if (!input.value.trim()) return;
 
-            // Loading State
             btn.disabled = true;
             btnText.classList.add('hidden');
             btnLoader.classList.remove('hidden');
@@ -304,22 +306,18 @@
                 raw = raw.replace(/```json/g, "").replace(/```/g, "").trim();
                 const content = JSON.parse(raw);
 
-                // Populate UI
                 content.tips.forEach((tip, i) => {
                     document.getElementById(`title-${i+1}`).innerText = tip.title;
                     document.getElementById(`desc-${i+1}`).innerText = tip.description;
                 });
 
-                // Set WhatsApp
                 const waBase = `Hola Eliseo! Use tu IA para mi negocio: *${input.value}*.\n\nMe interesó el punto:\n*${content.tips[2].title}*: ${content.tips[2].description}\n\n¿Cómo podemos empezar?`;
                 document.getElementById('whatsappBtn').href = `https://wa.me/3795041420?text=${encodeURIComponent(waBase)}`;
 
-                // Reveal Animations
                 results.classList.remove('opacity-0');
                 document.querySelectorAll('.bento-card').forEach(c => c.classList.add('visible'));
                 whatsapp.classList.add('visible');
 
-                // Single use logic
                 hasAsked = true;
                 input.disabled = true;
                 document.getElementById('limitMessage').classList.remove('hidden');
