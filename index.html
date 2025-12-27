@@ -105,6 +105,17 @@
         @keyframes spin { to { transform: rotate(360deg); } }
         .fade-up { animation: fadeUp 0.8s ease-out forwards; }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .error-message {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            padding: 1rem;
+            border-radius: 16px;
+            font-size: 0.8rem;
+            margin-bottom: 1rem;
+            display: none;
+        }
     </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-6 bg-[#050505]">
@@ -121,6 +132,8 @@
 
         <div class="glass-panel p-8 md:p-10">
             
+            <div id="error-box" class="error-message"></div>
+
             <div id="form-state">
                 <div class="space-y-6">
                     <div>
@@ -199,17 +212,38 @@
     </div>
 
     <script>
-        /**
-         * CONFIGURACIÓN DE API KEY
-         * Para que funcione online, genera tu clave en https://aistudio.google.com/
-         * y pégala entre las comillas de abajo.
-         */
-        const apiKey = "AIzaSyDDllTz55AUk2KYLHAnuB5Nkwt1QEyr0zY"; 
+        const apiKey = ""AIzaSyDDllTz55AUk2KYLHAnuB5Nkwt1QEyr0zY"; 
         const model = "gemini-2.5-flash-preview-09-2025";
         const whatsappNumber = "3795041420";
         const personalEmail = "olivellaeliseo@gmail.com";
         let hasAsked = false;
         let lastAnalysis = null;
+
+        function showError(msg) {
+            const errorBox = document.getElementById('error-box');
+            errorBox.textContent = msg;
+            errorBox.style.display = 'block';
+            setTimeout(() => { errorBox.style.display = 'none'; }, 5000);
+        }
+
+        async function fetchWithRetry(url, options, retries = 5) {
+            const delays = [1000, 2000, 4000, 8000, 16000];
+            for (let i = 0; i <= retries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (response.ok) return response;
+                    
+                    // Si llegamos aquí es un error de estado (403, 400, etc)
+                    if (i === retries) {
+                        const errorData = await response.json().catch(() => ({}));
+                        throw new Error(errorData.error?.message || `API Error: ${response.status}`);
+                    }
+                } catch (err) {
+                    if (i === retries) throw err;
+                }
+                await new Promise(resolve => setTimeout(resolve, delays[i]));
+            }
+        }
 
         async function generateStrategy() {
             if (hasAsked) return;
@@ -226,15 +260,7 @@
             const whatsappBtn = document.getElementById('whatsappBtn');
 
             if (!name.trim() || !niche.trim() || !desc.trim()) {
-                alert("Completa todos los campos para recibir la auditoría.");
-                return;
-            }
-
-            // Validación amigable por si olvidas poner la clave fuera de este entorno
-            if (!apiKey && window.location.hostname !== "localhost" && !window.location.hostname.includes("stackblitz")) {
-                const setupMsg = "Configuración requerida: Debes añadir tu API Key de Google AI Studio en el código para que el estratega funcione en tu propio servidor.";
-                console.error(setupMsg);
-                alert(setupMsg);
+                showError("Completa todos los campos para recibir la auditoría.");
                 return;
             }
 
@@ -243,10 +269,12 @@
 
             const systemPrompt = `Eres el estratega senior y arquitecto web de Eliseo Studio. 
             Analiza el negocio del usuario y diseña la MEJOR página web posible para su rubro específico.
-            Genera 3 pilares tácticos centrados en el SITIO WEB:
-            1. Arquitectura de Interfaz: Cómo debe ser el diseño (Apple-style) adaptado a su nicho.
-            2. Motor de Conversión: Funcionalidades clave que el sitio DEBE tener para ese rubro (reservas, catálogos, automatización).
-            3. Implementación Elite: Por qué esta web le dará ventaja competitiva.
+            Genera 3 pilares tácticos centrados en el SITIO WEB que Eliseo Studio ofrece:
+            1. Arquitectura de Interfaz: Diseño Apple-style, minimalista y visualmente impactante.
+            2. Motor de Conversión: Funcionalidades lógicas (reservas, catálogos, formularios inteligentes).
+            3. Sello Eliseo Studio: Por qué tu enfoque premium y rápido (7 días) es la solución.
+
+            LIMITACIONES: No sugieras desarrollos de aplicaciones móviles nativas complejas, software pesado de escritorio o sistemas de seguridad de nivel bancario. Enfócate en soluciones web de alto impacto estético y funcional que se puedan construir con tecnologías web modernas.
 
             Responde estrictamente en JSON:
             {
@@ -271,11 +299,6 @@
                 });
 
                 const data = await response.json();
-                
-                if (data.error) {
-                    throw new Error(data.error.message);
-                }
-
                 const jsonResponse = JSON.parse(data.candidates[0].content.parts[0].text);
                 lastAnalysis = { ...jsonResponse, name, niche, desc };
 
@@ -346,9 +369,9 @@
 
             } catch (error) {
                 console.error(error);
-                alert("Error: " + error.message);
                 loadingState.classList.add('hidden');
                 formState.classList.remove('hidden');
+                showError("Hubo un problema al conectar con el estratega. Por favor, revisa tu conexión o intenta más tarde.");
             }
         }
 
@@ -464,18 +487,6 @@
             doc.text("CON GRATITUD, ELISEO.", 20, currentY);
 
             doc.save(`Auditoria_Web_EliseoStudio_${name.replace(/\s+/g, '_')}.pdf`);
-        }
-
-        async function fetchWithRetry(url, options, retries = 5, backoff = 1000) {
-            try {
-                const response = await fetch(url, options);
-                if (!response.ok) throw new Error('API Error');
-                return response;
-            } catch (err) {
-                if (retries <= 0) throw err;
-                await new Promise(r => setTimeout(r, backoff));
-                return fetchWithRetry(url, options, retries - 1, backoff * 2);
-            }
         }
 
         document.getElementById('businessInput').addEventListener('keypress', (e) => {
