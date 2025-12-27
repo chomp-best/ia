@@ -6,7 +6,6 @@
     <title>Estratega IA | Eliseo Studio</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <!-- jsPDF Library for PDF generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap');
@@ -54,7 +53,6 @@
             background: #f5f5f7;
         }
 
-        /* Invoice Style */
         .invoice-box {
             background: rgba(255, 255, 255, 0.02);
             border: 1px dashed rgba(255, 255, 255, 0.15);
@@ -63,7 +61,6 @@
             padding: 1.5rem;
         }
 
-        /* Tip Cards */
         .tip-card {
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.05);
@@ -79,9 +76,10 @@
 
         .tip-card.show { opacity: 1; transform: translateY(0); }
         .tip-card.expanded {
-            max-height: 600px;
+            max-height: 700px;
             background: rgba(255, 255, 255, 0.07);
             border-color: rgba(0, 113, 227, 0.4);
+            padding-bottom: 2rem;
         }
 
         .tip-card.premium-tip {
@@ -113,98 +111,86 @@
 
     <div class="apple-container fade-up">
         
-        <!-- Header -->
         <div class="text-center mb-10">
             <div class="w-14 h-14 bg-white rounded-2xl mx-auto flex items-center justify-center mb-6 shadow-xl">
                 <i class="fa-solid fa-wand-magic-sparkles text-black text-2xl"></i>
             </div>
             <h1 class="text-3xl font-bold tracking-tighter mb-2">Estratega IA</h1>
-            <p class="text-sm text-gray-500">Transformando empresas con precisión digital.</p>
+            <p class="text-sm text-gray-500">Arquitectura web para marcas que dominan su mercado.</p>
         </div>
 
         <div class="glass-panel p-8 md:p-10">
             
-            <!-- Form State -->
             <div id="form-state">
                 <div class="space-y-6">
                     <div>
                         <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Tu Nombre</label>
                         <input type="text" id="ownerName" 
                             class="input-dark w-full p-4 text-sm placeholder:text-gray-800"
-                            placeholder="Ej: Eliseo Rodriguez">
+                            placeholder="Ej: Eliseo Rodríguez">
                     </div>
                     
                     <div>
                         <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Rubro del Negocio</label>
                         <input type="text" id="businessNiche" 
                             class="input-dark w-full p-4 text-sm placeholder:text-gray-800"
-                            placeholder="Ej: Real Estate, Moda, Gastronomía...">
+                            placeholder="Ej: Real Estate, Showroom, Gastronomía...">
                     </div>
 
                     <div>
                         <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">¿A qué se dedica tu empresa?</label>
                         <textarea id="businessInput" 
                             class="input-dark w-full h-32 p-4 text-sm leading-relaxed resize-none placeholder:text-gray-800"
-                            placeholder="Describe brevemente qué buscas lograr..."></textarea>
+                            placeholder="Describe brevemente qué buscas lograr hoy..."></textarea>
                     </div>
                 </div>
                 
                 <button onclick="generateStrategy()" id="submitBtn" class="btn-ai w-full py-4 rounded-2xl font-bold text-sm mt-8">
-                    Generar Análisis Estratégico
+                    Diseñar Hoja de Ruta Web
                 </button>
             </div>
 
-            <!-- Loading State -->
             <div id="loading-state" class="hidden py-10 text-center">
                 <div class="loader mx-auto mb-6"></div>
-                <p class="text-sm text-gray-400 font-medium">Gemini está procesando tu visión...</p>
+                <p class="text-sm text-gray-400 font-medium">Analizando el mercado y diseñando la interfaz ideal...</p>
             </div>
 
-            <!-- Result State -->
             <div id="result-state" class="hidden">
                 <div class="flex items-center justify-between mb-8">
-                    <h2 class="text-lg font-bold text-white">Hoja de Ruta</h2>
+                    <h2 class="text-lg font-bold text-white">Estrategia Web</h2>
                     <span class="text-[10px] font-bold text-purple-500 uppercase tracking-widest bg-purple-500/10 px-3 py-1 rounded-full">Visión IA</span>
                 </div>
                 
-                <!-- Container for Cards -->
-                <div id="tips-container" class="space-y-4 mb-8">
-                    <!-- Cards injected here -->
-                </div>
+                <div id="tips-container" class="space-y-4 mb-8"></div>
 
-                <!-- Invoice Style Summary -->
                 <div id="invoice-summary" class="invoice-box mb-10">
                     <div class="flex justify-between items-center mb-4 pb-2 border-b border-white/10">
-                        <span class="text-[10px] font-bold text-gray-500">RESUMEN_EJECUTIVO</span>
-                        <span class="text-[10px] text-gray-500" id="invoiceVersion">v1.0</span>
+                        <span class="text-[10px] font-bold text-gray-500 uppercase">Resumen del Proyecto</span>
+                        <span class="text-[10px] text-gray-500" id="invoiceVersion">v1.3</span>
                     </div>
-                    <div id="invoice-items" class="space-y-3 text-[11px]">
-                        <!-- Items injected here -->
-                    </div>
+                    <div id="invoice-items" class="space-y-3 text-[11px]"></div>
                     <div class="mt-6 pt-4 border-t border-white/10 flex justify-between items-center">
                         <span class="text-[10px] font-bold text-purple-400">STATUS:</span>
-                        <span class="text-[10px] font-bold text-white">LISTO_PARA_EJECUTAR</span>
+                        <span class="text-[10px] font-bold text-white uppercase tracking-widest">Listo para Ejecutar</span>
                     </div>
                 </div>
 
                 <div class="space-y-3">
                     <a id="whatsappBtn" href="#" target="_blank" class="bg-[#25d366] text-white w-full py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-3 shadow-lg shadow-green-500/20">
                         <i class="fa-brands fa-whatsapp text-lg"></i>
-                        Iniciar Proyecto vía WhatsApp
+                        Cerrar Proyecto vía WhatsApp
                     </a>
                     
                     <button onclick="downloadPDF()" class="bg-white/5 border border-white/10 text-white w-full py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-3 hover:bg-white/10 transition-all">
                         <i class="fa-solid fa-file-pdf text-lg text-red-500"></i>
-                        Descargar Estrategia Detallada
+                        Descargar Plan de Ejecución
                     </button>
 
-                    <p class="text-center text-[10px] font-bold text-gray-600 uppercase tracking-[0.2em] pt-4">Límite de consulta alcanzado</p>
+                    <p class="text-center text-[10px] font-bold text-gray-600 uppercase tracking-[0.2em] pt-4">Consulta Única Completada</p>
                 </div>
             </div>
-
         </div>
 
-        <!-- Footer -->
         <div class="mt-12 text-center">
             <a href="https://chomp-best.github.io/proyectos/" class="text-[10px] font-bold text-gray-700 uppercase tracking-widest hover:text-gray-400 transition-colors" target="_parent">
                 <i class="fa-solid fa-chevron-left mr-2"></i> Regresar a Proyectos
@@ -213,7 +199,12 @@
     </div>
 
     <script>
-        const apiKey = ""; 
+        /**
+         * CONFIGURACIÓN DE API KEY
+         * Para que funcione online, genera tu clave en https://aistudio.google.com/
+         * y pégala entre las comillas de abajo.
+         */
+        const apiKey = "AIzaSyDDllTz55AUk2KYLHAnuB5Nkwt1QEyr0zY"; 
         const model = "gemini-2.5-flash-preview-09-2025";
         const whatsappNumber = "3795041420";
         const personalEmail = "olivellaeliseo@gmail.com";
@@ -235,20 +226,34 @@
             const whatsappBtn = document.getElementById('whatsappBtn');
 
             if (!name.trim() || !niche.trim() || !desc.trim()) {
-                alert("Por favor, completa todos los campos para continuar.");
+                alert("Completa todos los campos para recibir la auditoría.");
+                return;
+            }
+
+            // Validación amigable por si olvidas poner la clave fuera de este entorno
+            if (!apiKey && window.location.hostname !== "localhost" && !window.location.hostname.includes("stackblitz")) {
+                const setupMsg = "Configuración requerida: Debes añadir tu API Key de Google AI Studio en el código para que el estratega funcione en tu propio servidor.";
+                console.error(setupMsg);
+                alert(setupMsg);
                 return;
             }
 
             formState.classList.add('hidden');
             loadingState.classList.remove('hidden');
 
-            const systemPrompt = `Eres el estratega senior de Eliseo Studio. Analiza la actividad de la empresa y genera 3 pilares tácticos.
-            IMPORTANTE: Responde estrictamente en JSON:
+            const systemPrompt = `Eres el estratega senior y arquitecto web de Eliseo Studio. 
+            Analiza el negocio del usuario y diseña la MEJOR página web posible para su rubro específico.
+            Genera 3 pilares tácticos centrados en el SITIO WEB:
+            1. Arquitectura de Interfaz: Cómo debe ser el diseño (Apple-style) adaptado a su nicho.
+            2. Motor de Conversión: Funcionalidades clave que el sitio DEBE tener para ese rubro (reservas, catálogos, automatización).
+            3. Implementación Elite: Por qué esta web le dará ventaja competitiva.
+
+            Responde estrictamente en JSON:
             {
                 "tips": [
-                    {"title": "Diseño Visual", "desc": "Descripción detallada", "icon": "fa-palette"},
-                    {"title": "Conversión UX", "desc": "Descripción detallada", "icon": "fa-chart-pie"},
-                    {"title": "Implementación Elite", "desc": "Descripción sobre el sello Eliseo (estilo Apple, 7 días)", "icon": "fa-crown"}
+                    {"title": "...", "desc": "...", "benefit": "...", "time": "...", "icon": "fa-layout"},
+                    {"title": "...", "desc": "...", "benefit": "...", "time": "...", "icon": "fa-gears"},
+                    {"title": "Sello Eliseo Studio", "desc": "...", "benefit": "...", "time": "7 días", "icon": "fa-crown"}
                 ]
             }`;
 
@@ -259,13 +264,18 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: `Dueño: ${name}, Rubro: ${niche}, Empresa: ${desc}` }] }],
+                        contents: [{ parts: [{ text: `Dueño: ${name}, Rubro: ${niche}, Descripción Negocio: ${desc}` }] }],
                         systemInstruction: { parts: [{ text: systemPrompt }] },
                         generationConfig: { responseMimeType: "application/json" }
                     })
                 });
 
                 const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error.message);
+                }
+
                 const jsonResponse = JSON.parse(data.candidates[0].content.parts[0].text);
                 lastAnalysis = { ...jsonResponse, name, niche, desc };
 
@@ -274,8 +284,8 @@
                     invoiceItems.innerHTML = '';
 
                     const headerItem = document.createElement('div');
-                    headerItem.className = 'mb-4 text-gray-400 border-b border-white/5 pb-2';
-                    headerItem.innerHTML = `CLIENTE: ${name.toUpperCase()}<br>RUBRO: ${niche.toUpperCase()}`;
+                    headerItem.className = 'mb-4 text-gray-400 border-b border-white/5 pb-2 text-[9px] uppercase tracking-tighter';
+                    headerItem.innerHTML = `TITULAR: ${name}<br>RUBRO: ${niche}`;
                     invoiceItems.appendChild(headerItem);
 
                     jsonResponse.tips.forEach((tip, index) => {
@@ -286,16 +296,29 @@
                         card.innerHTML = `
                             <div class="tip-header flex justify-between items-start">
                                 <div class="flex-grow">
-                                    <span class="tip-number">${isLast ? 'Sello Eliseo Studio' : `Estrategia 0${index + 1}`}</span>
+                                    <span class="tip-number">${isLast ? 'Sello Eliseo Studio' : `Estrategia Web 0${index + 1}`}</span>
                                     <h3 class="font-bold text-white tracking-tight">${tip.title}</h3>
                                 </div>
                                 <div class="flex flex-col items-end gap-2">
-                                    <i class="fa-solid ${tip.icon} ${isLast ? 'text-purple-500' : 'text-gray-600'} text-sm"></i>
+                                    <i class="fa-solid ${tip.icon} ${isLast ? 'text-purple-500' : 'text-gray-600'} text-sm opacity-60"></i>
                                     <i class="fa-solid fa-plus expand-icon"></i>
                                 </div>
                             </div>
-                            <div class="tip-content">
-                                <p class="text-xs text-gray-400 leading-relaxed">${tip.desc}</p>
+                            <div class="tip-content space-y-4">
+                                <div>
+                                    <p class="text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1">Arquitectura</p>
+                                    <p class="text-xs text-gray-300 leading-relaxed">${tip.desc}</p>
+                                </div>
+                                <div class="grid grid-cols-1 gap-2 pt-2">
+                                    <div>
+                                        <p class="text-[9px] font-bold text-green-500 uppercase tracking-widest mb-1">Beneficio Web</p>
+                                        <p class="text-[10px] text-gray-400 italic">${tip.benefit}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-[9px] font-bold text-blue-500 uppercase tracking-widest mb-1">Tiempo de Desarrollo</p>
+                                        <p class="text-[10px] text-gray-400">${tip.time}</p>
+                                    </div>
+                                </div>
                             </div>
                         `;
                         card.onclick = () => card.classList.toggle('expanded');
@@ -305,7 +328,7 @@
                         const item = document.createElement('div');
                         item.className = 'flex justify-between items-center opacity-80';
                         item.innerHTML = `
-                            <span><i class="fa-solid ${tip.icon} mr-2"></i> ${tip.title.toUpperCase()}</span>
+                            <span>${tip.title.toUpperCase()}</span>
                             <span class="text-gray-600">[OK]</span>
                         `;
                         invoiceItems.appendChild(item);
@@ -314,8 +337,8 @@
                     loadingState.classList.add('hidden');
                     resultState.classList.remove('hidden');
 
-                    let waText = `Hola Eliseo! Soy *${name}* del rubro *${niche}*.\nEstuve usando el Estratega IA para mi empresa: ${desc}\n\n*Resultados del Análisis:*`;
-                    jsonResponse.tips.forEach((t, i) => waText += `\n\n${i+1}. *${t.title}*: ${t.desc}`);
+                    let waText = `Hola Eliseo! Soy *${name}* (${niche}).\nQuiero desarrollar el sitio web que me recomendó tu Estratega IA:\n`;
+                    jsonResponse.tips.forEach((t) => waText += `\n- *${t.title}* (${t.time}): ${t.benefit}`);
                     whatsappBtn.href = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(waText)}`;
 
                     hasAsked = true;
@@ -323,7 +346,7 @@
 
             } catch (error) {
                 console.error(error);
-                alert("Error de conexión. Inténtalo de nuevo.");
+                alert("Error: " + error.message);
                 loadingState.classList.add('hidden');
                 formState.classList.remove('hidden');
             }
@@ -335,75 +358,89 @@
             const doc = new jsPDF();
             const { name, niche, tips, desc } = lastAnalysis;
 
-            // Header
             doc.setFillColor(0, 0, 0);
-            doc.rect(0, 0, 210, 40, 'F');
+            doc.rect(0, 0, 210, 45, 'F');
             doc.setTextColor(255, 255, 255);
             doc.setFont("helvetica", "bold");
-            doc.setFontSize(22);
-            doc.text("ELISEO STUDIO", 20, 25);
-            doc.setFontSize(10);
-            doc.text("ESTRATEGA IA - BRIEF DE NEGOCIO", 130, 25);
+            doc.setFontSize(24);
+            doc.text("ELISEO STUDIO", 20, 28);
+            doc.setFontSize(9);
+            doc.setFont("helvetica", "normal");
+            doc.text("CONSULTORÍA DIGITAL ESTRATÉGICA", 20, 36);
+            doc.text("BRIEF DE PROYECTO WEB #"+Math.floor(Math.random()*9000), 135, 28);
 
-            // Client Info
             doc.setTextColor(0, 0, 0);
             doc.setFontSize(11);
-            doc.text(`CLIENTE: ${name.toUpperCase()}`, 20, 50);
-            doc.text(`RUBRO: ${niche.toUpperCase()}`, 20, 57);
+            doc.setFont("helvetica", "bold");
+            doc.text(`CLIENTE: ${name.toUpperCase()}`, 20, 60);
+            doc.text(`RUBRO: ${niche.toUpperCase()}`, 20, 67);
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(8);
+            doc.text("FECHA DE EMISIÓN: " + new Date().toLocaleDateString(), 155, 60);
+
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "bold");
+            doc.text("CONTEXTO DEL NEGOCIO:", 20, 80);
             doc.setFont("helvetica", "normal");
             doc.setFontSize(9);
-            doc.text("FECHA: " + new Date().toLocaleDateString(), 155, 50);
-
-            // Business Description Section
-            doc.setFont("helvetica", "bold");
-            doc.text("DESCRIPCIÓN DEL NEGOCIO:", 20, 68);
-            doc.setFont("helvetica", "normal");
             const descLines = doc.splitTextToSize(desc, 170);
-            doc.text(descLines, 20, 73);
+            doc.text(descLines, 20, 86);
 
-            // Divider
-            let currentY = 73 + (descLines.length * 5) + 5;
-            doc.setDrawColor(230, 230, 230);
+            let currentY = 86 + (descLines.length * 5) + 10;
+            doc.setDrawColor(240);
             doc.line(20, currentY, 190, currentY);
             currentY += 15;
 
-            // Analysis content
-            doc.setFont("helvetica", "bold");
             doc.setFontSize(14);
-            doc.text("HOJA DE RUTA ESTRATÉGICA", 20, currentY);
+            doc.setFont("helvetica", "bold");
+            doc.text("PLAN DE DESARROLLO Y BENEFICIOS", 20, currentY);
             currentY += 12;
 
             tips.forEach((tip, i) => {
-                doc.setFontSize(11);
-                doc.setTextColor(0, 113, 227);
-                doc.text(`PILAR 0${i+1}: ${tip.title.toUpperCase()}`, 20, currentY);
-                currentY += 7;
-                doc.setTextColor(60, 60, 60);
-                doc.setFont("helvetica", "normal");
-                doc.setFontSize(10);
+                const tipLines = doc.splitTextToSize(tip.desc, 160);
+                const benefitLines = doc.splitTextToSize(tip.benefit || "", 135);
+                let boxHeight = 25 + (tipLines.length * 5) + (benefitLines.length * 5) + 15;
                 
-                const lines = doc.splitTextToSize(tip.desc, 170);
-                doc.text(lines, 20, currentY);
-                currentY += (lines.length * 5) + 12;
+                doc.setFillColor(252, 252, 254);
+                doc.rect(20, currentY, 170, boxHeight, 'F');
+                
+                doc.setFontSize(10);
+                doc.setTextColor(0, 113, 227);
+                doc.text(`0${i+1} | ${tip.title.toUpperCase()}`, 25, currentY + 10);
+                
+                doc.setTextColor(80, 80, 80);
+                doc.setFontSize(9);
+                doc.setFont("helvetica", "normal");
+                doc.text(tipLines, 25, currentY + 17);
+                
+                let textY = currentY + 17 + (tipLines.length * 5) + 5;
+                
+                doc.setTextColor(34, 197, 94);
+                doc.setFont("helvetica", "bold");
+                doc.text("BENEFICIO:", 25, textY);
+                doc.setTextColor(60);
+                doc.setFont("helvetica", "italic");
+                doc.text(benefitLines, 50, textY);
+                
+                textY += (benefitLines.length * 5) + 2;
+                
+                doc.setTextColor(0, 113, 227);
+                doc.setFont("helvetica", "bold");
+                doc.text("TIEMPO DESARROLLO:", 25, textY);
+                doc.setTextColor(60);
+                doc.setFont("helvetica", "normal");
+                doc.text(tip.time, 72, textY);
 
-                if(currentY > 260) {
-                    doc.addPage();
-                    currentY = 20;
-                }
+                currentY += boxHeight + 10;
+                if(currentY > 260) { doc.addPage(); currentY = 20; }
             });
 
-            // Contact Block
-            if (currentY > 230) {
-                doc.addPage();
-                currentY = 20;
-            }
-
-            doc.setFillColor(245, 245, 247);
+            if(currentY > 230) { doc.addPage(); currentY = 20; }
+            doc.setFillColor(248, 248, 250);
             doc.rect(20, currentY, 170, 35, 'F');
             doc.setTextColor(0, 0, 0);
             doc.setFont("helvetica", "bold");
-            doc.setFontSize(11);
-            doc.text("LISTO PARA EJECUTAR", 30, currentY + 12);
+            doc.text("INICIAR IMPLEMENTACIÓN", 30, currentY + 12);
             doc.setFont("helvetica", "normal");
             doc.setFontSize(9);
             doc.text(`WhatsApp: +${whatsappNumber}`, 30, currentY + 20);
@@ -411,46 +448,38 @@
 
             currentY += 50;
 
-            // Introspective Legend
             doc.setDrawColor(168, 85, 247);
             doc.setLineWidth(0.5);
             doc.line(20, currentY, 40, currentY);
-            
             currentY += 10;
             doc.setFont("helvetica", "italic");
             doc.setFontSize(9);
-            doc.setTextColor(120, 120, 120);
-            
+            doc.setTextColor(130);
             const introspectiveMsg = "Este análisis no es solo el resultado de algoritmos procesando datos; es el reflejo de una visión que busca trascender lo convencional. En Eliseo Studio, creemos que el diseño premium y la tecnología no son fines, sino el lenguaje con el que construimos el futuro de tu negocio. Gracias por confiar en mi criterio y en esta herramienta. Lo que hoy es una hoja de ruta, mañana puede ser el estándar de tu industria.";
-            
             const introLines = doc.splitTextToSize(introspectiveMsg, 170);
             doc.text(introLines, 20, currentY);
-            
             currentY += (introLines.length * 4) + 10;
             doc.setFont("helvetica", "bold");
             doc.setTextColor(168, 85, 247);
             doc.text("CON GRATITUD, ELISEO.", 20, currentY);
 
-            doc.save(`Estrategia_${name.replace(/\s+/g, '_')}.pdf`);
+            doc.save(`Auditoria_Web_EliseoStudio_${name.replace(/\s+/g, '_')}.pdf`);
         }
 
         async function fetchWithRetry(url, options, retries = 5, backoff = 1000) {
-            const response = await fetch(url, options);
-            if (!response.ok) {
-                if (retries > 0) {
-                    await new Promise(r => setTimeout(r, backoff));
-                    return fetchWithRetry(url, options, retries - 1, backoff * 2);
-                }
-                throw new Error('API Error');
+            try {
+                const response = await fetch(url, options);
+                if (!response.ok) throw new Error('API Error');
+                return response;
+            } catch (err) {
+                if (retries <= 0) throw err;
+                await new Promise(r => setTimeout(r, backoff));
+                return fetchWithRetry(url, options, retries - 1, backoff * 2);
             }
-            return response;
         }
 
         document.getElementById('businessInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                generateStrategy();
-            }
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); generateStrategy(); }
         });
     </script>
 </body>
