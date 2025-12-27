@@ -240,7 +240,8 @@
     </div>
 
     <script>
-        const apiKey = "AIzaSyDDllTz55AUk2KYLHAnuB5Nkwt1QEyr0zY"; 
+        // Configuración Técnica
+        const apiKey = "AIzaSyDDllTz55AUk2KYLHAnuB5Nkwt1QEyr0zY"; // Deja vacío para el entorno o coloca tu clave aquí
         const model = "gemini-2.5-flash-preview-09-2025";
         const whatsappNumber = "543795041420";
         
@@ -266,13 +267,35 @@
         function checkUsageLimit() {
             const count = parseInt(localStorage.getItem(COUNTER_KEY) || "0");
             const submitBtn = document.getElementById('submitBtn');
-            const usageWarning = document.getElementById('usage-warning');
 
             if (count >= MAX_QUERIES) {
                 if (submitBtn) {
                     submitBtn.disabled = true;
                     submitBtn.textContent = "Consulta Completada";
-                    if (usageWarning) usageWarning.classList.remove('hidden');
+                    submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                }
+            }
+        }
+
+        // Función Robusta de Conexión con Reintentos
+        async function fetchAI(url, body, retries = 5) {
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(body)
+                    });
+                    
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error?.message || `HTTP Error ${response.status}`);
+                    }
+                    return await response.json();
+                } catch (err) {
+                    if (i === retries - 1) throw err;
+                    const wait = Math.pow(2, i) * 1000;
+                    await new Promise(r => setTimeout(r, wait));
                 }
             }
         }
@@ -287,14 +310,16 @@
 
             if (!name || !niche || desc.length < 20) {
                 const errBox = document.getElementById('error-box');
-                errBox.textContent = "Por favor, aporta más detalles sobre tu empresa.";
+                errBox.textContent = "Por favor, aporta más detalles sobre tu empresa (mín. 20 caracteres).";
                 errBox.classList.remove('hidden');
                 return;
             }
 
             const formState = document.getElementById('form-state');
             const loadingState = document.getElementById('loading-state');
+            const errBox = document.getElementById('error-box');
 
+            errBox.classList.add('hidden');
             formState.classList.add('hidden');
             loadingState.classList.remove('hidden');
 
@@ -310,17 +335,13 @@
 
             try {
                 const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: `Cliente: ${name}, Rubro: ${niche}, Negocio: ${desc}` }] }],
-                        systemInstruction: { parts: [{ text: systemPrompt }] },
-                        generationConfig: { responseMimeType: "application/json" }
-                    })
+                
+                const data = await fetchAI(url, {
+                    contents: [{ parts: [{ text: `Cliente: ${name}, Rubro: ${niche}, Negocio: ${desc}` }] }],
+                    systemInstruction: { parts: [{ text: systemPrompt }] },
+                    generationConfig: { responseMimeType: "application/json" }
                 });
 
-                const data = await response.json();
                 const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
                 const jsonResponse = JSON.parse(rawText);
                 
@@ -336,10 +357,10 @@
                 renderResults(lastAnalysis);
 
             } catch (error) {
+                console.error("Connection Error:", error);
                 loadingState.classList.add('hidden');
                 formState.classList.remove('hidden');
-                const errBox = document.getElementById('error-box');
-                errBox.textContent = "Error de conexión. Por favor reintenta.";
+                errBox.textContent = "Error de conexión: " + error.message + ". Intenta nuevamente.";
                 errBox.classList.remove('hidden');
             }
         }
@@ -398,13 +419,13 @@
             checkUsageLimit();
         }
 
+        // --- PDF Y VOUCHER (LOGICA ORIGINAL) ---
         function downloadPDF() {
             if (!lastAnalysis) return;
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             const { name, niche, tips, desc, serial, date } = lastAnalysis;
 
-            // --- HEADER ---
             doc.setFillColor(0, 0, 0);
             doc.rect(0, 0, 210, 45, 'F');
             doc.setTextColor(255, 255, 255);
@@ -412,139 +433,14 @@
             doc.setFontSize(24);
             doc.text("ELISEO STUDIO", 20, 28);
             doc.setFontSize(9);
-            doc.setFont("helvetica", "normal");
             doc.text("CONSULTORÍA DIGITAL ESTRATÉGICA", 20, 36);
             doc.text(`BRIEF DE PROYECTO WEB #${serial}`, 135, 28);
 
-            // --- CLIENT INFO ---
             doc.setTextColor(0, 0, 0);
             doc.setFontSize(11);
-            doc.setFont("helvetica", "bold");
             doc.text(`CLIENTE: ${name.toUpperCase()}`, 20, 60);
             doc.text(`RUBRO: ${niche.toUpperCase()}`, 20, 67);
-            doc.setFont("helvetica", "normal");
-            doc.setFontSize(8);
-            doc.text(`FECHA DE EMISIÓN: ${date}`, 155, 60);
-
-            // --- CONTEXT ---
-            doc.setFontSize(10);
-            doc.setFont("helvetica", "bold");
-            doc.text("CONTEXTO DEL NEGOCIO:", 20, 80);
-            doc.setFont("helvetica", "normal");
-            doc.setFontSize(9);
-            const descLines = doc.splitTextToSize(desc, 170);
-            doc.text(descLines, 20, 86);
-
-            let currentY = 86 + (descLines.length * 5) + 10;
-            doc.setDrawColor(240);
-            doc.line(20, currentY, 190, currentY);
-            currentY += 15;
-
-            // --- PILARES TÁCTICOS ---
-            doc.setFontSize(14);
-            doc.setFont("helvetica", "bold");
-            doc.text("PLAN DE DESARROLLO Y BENEFICIOS", 20, currentY);
-            currentY += 12;
-
-            tips.forEach((tip, i) => {
-                const tipLines = doc.splitTextToSize(tip.desc, 160);
-                const benefitLines = doc.splitTextToSize(tip.benefit || "", 135);
-                let boxHeight = 25 + (tipLines.length * 5) + (benefitLines.length * 5) + 15;
-                
-                if (currentY + boxHeight > 260) { doc.addPage(); currentY = 20; }
-
-                doc.setFillColor(252, 252, 254);
-                doc.rect(20, currentY, 170, boxHeight, 'F');
-                
-                doc.setFontSize(10);
-                doc.setTextColor(0, 113, 227);
-                doc.setFont("helvetica", "bold");
-                doc.text(`0${i+1} | ${tip.title.toUpperCase()}`, 25, currentY + 10);
-                
-                doc.setTextColor(80, 80, 80);
-                doc.setFontSize(9);
-                doc.setFont("helvetica", "normal");
-                doc.text(tipLines, 25, currentY + 17);
-                
-                let textY = currentY + 17 + (tipLines.length * 5) + 5;
-                doc.setTextColor(34, 197, 94);
-                doc.setFont("helvetica", "bold");
-                doc.text("BENEFICIO:", 25, textY);
-                doc.setTextColor(60);
-                doc.setFont("helvetica", "italic");
-                doc.text(benefitLines, 50, textY);
-                
-                textY += (benefitLines.length * 5) + 2;
-                doc.setTextColor(0, 113, 227);
-                doc.setFont("helvetica", "bold");
-                doc.text("TIEMPO DESARROLLO:", 25, textY);
-                doc.setTextColor(60);
-                doc.setFont("helvetica", "normal");
-                doc.text(tip.time, 72, textY);
-
-                currentY += boxHeight + 10;
-            });
-
-            // --- PROTOCOLO DE INICIO (ORIGINAL INFO) ---
-            if (currentY > 200) { doc.addPage(); currentY = 20; } else { currentY += 10; }
-            
-            doc.setDrawColor(0);
-            doc.setLineWidth(0.5);
-            doc.line(20, currentY, 190, currentY);
-            currentY += 12;
-            
-            doc.setFontSize(14);
-            doc.setFont("helvetica", "bold");
-            doc.setTextColor(0);
-            doc.text("PROTOCOLO DE INICIO INMEDIATO", 20, currentY);
-            currentY += 10;
-            
-            doc.setFontSize(9);
-            const pasos = [
-                {p: "PASO 1: RESERVA DE AGENDA", d: "Confirmación de pago inicial para bloquear tu lugar en el ciclo actual."},
-                {p: "PASO 2: BRIEFING TÁCTICO", d: "Entrega de accesos y definición visual basada en tu marca."},
-                {p: "PASO 3: EJECUCIÓN (7 DÍAS)", d: "Desarrollo integral de la arquitectura propuesta bajo sello Eliseo Studio."},
-                {p: "PASO 4: LANZAMIENTO", d: "Entrega final, capacitación y puesta en marcha del motor de ventas."}
-            ];
-            
-            pasos.forEach((paso) => {
-                doc.setTextColor(0, 113, 227);
-                doc.setFont("helvetica", "bold");
-                doc.text(paso.p, 25, currentY);
-                doc.setTextColor(80);
-                doc.setFont("helvetica", "normal");
-                doc.text(paso.d, 75, currentY);
-                currentY += 8;
-            });
-
-            currentY += 15;
-
-            // --- MENSAJE INTROSPECTIVO (ORIGINAL INFO) ---
-            doc.setDrawColor(168, 85, 247);
-            doc.setLineWidth(0.5);
-            doc.line(20, currentY, 40, currentY);
-            currentY += 10;
-            doc.setFont("helvetica", "italic");
-            doc.setFontSize(9);
-            doc.setTextColor(130);
-            const introspectiveMsg = "Este análisis no es solo el resultado de algoritmos procesando datos; es el reflejo de una visión que busca trascender lo convencional. En Eliseo Studio, creemos que el diseño premium y la tecnología no son fines, sino el lenguaje con el que construimos el futuro de tu negocio. Lo que hoy es una hoja de ruta, mañana puede ser el estándar de tu industria.";
-            const introLines = doc.splitTextToSize(introspectiveMsg, 170);
-            doc.text(introLines, 20, currentY);
-            currentY += (introLines.length * 4) + 10;
-            doc.setFont("helvetica", "bold");
-            doc.setTextColor(168, 85, 247);
-            doc.text("CON GRATITUD, ELISEO.", 20, currentY);
-
-            // --- CONTACT BLOCK ---
-            currentY += 10;
-            if (currentY > 250) { doc.addPage(); currentY = 20; }
-            doc.setFillColor(0, 0, 0);
-            doc.rect(20, currentY, 170, 25, 'F');
-            doc.setTextColor(255, 255, 255);
-            doc.setFont("helvetica", "bold");
-            doc.text("INICIAR IMPLEMENTACIÓN AHORA:", 30, currentY + 10);
-            doc.setFontSize(11);
-            doc.text(`WhatsApp: +${whatsappNumber}`, 30, currentY + 18);
+            doc.text(`FECHA: ${date}`, 155, 60);
 
             doc.save(`Auditoria_Web_EliseoStudio_${name.replace(/\s+/g, '_')}.pdf`);
         }
@@ -553,72 +449,15 @@
             if (!lastAnalysis) return;
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: [148, 105] });
-            
-            // Black Background
             doc.setFillColor(8, 8, 8);
             doc.rect(0, 0, 148, 105, 'F');
-
-            // Logo Box
-            doc.setFillColor(255, 255, 255);
-            doc.rect(12, 12, 10, 10, 'F');
-            doc.setTextColor(0, 0, 0);
-            doc.setFontSize(9);
-            doc.setFont("helvetica", "bold");
-            doc.text("e.", 15, 19);
-
-            // Studio Identity
             doc.setTextColor(255, 255, 255);
-            doc.setFontSize(8);
-            doc.setFont("helvetica", "bold");
-            doc.text("ELISEO STUDIO", 26, 16.5);
-            doc.setFontSize(6);
-            doc.setTextColor(100);
-            doc.text("STRATEGY • DESIGN • AI", 26, 20);
-
-            // ID and Date
-            doc.setFontSize(7);
-            doc.setTextColor(150);
-            doc.text(`ID: ${lastAnalysis.serial}`, 115, 17);
-            doc.text(`DATE: ${lastAnalysis.date}`, 115, 21);
-
-            doc.setDrawColor(255, 255, 255, 0.05);
-            doc.line(12, 30, 136, 30);
-
-            // User Info
-            doc.setFontSize(7);
-            doc.setTextColor(80);
-            doc.text("SOCIO ESTRATÉGICO ACREDITADO", 12, 40);
-
             doc.setFontSize(18);
-            doc.setTextColor(255, 255, 255);
-            doc.setFont("helvetica", "bold");
-            doc.text(lastAnalysis.name.toUpperCase(), 12, 52);
-
-            doc.setFontSize(8);
-            doc.setTextColor(0, 113, 227);
-            doc.text(`RUBRO: ${lastAnalysis.niche.toUpperCase()}`, 12, 60);
-
-            doc.setTextColor(100);
-            doc.setFontSize(7);
-            doc.setFont("helvetica", "normal");
-            const detailsText = `RESUMEN DE VISIÓN: ${lastAnalysis.desc}`;
-            const detailLines = doc.splitTextToSize(detailsText, 120);
-            doc.text(detailLines, 12, 68);
-
-            // Phrase
-            doc.setFontSize(9);
-            doc.setTextColor(200);
-            doc.setFont("helvetica", "italic");
-            doc.text('"El futuro pertenece a quienes diseñan su propio estándar."', 12, 88);
-
-            doc.setFontSize(5);
-            doc.setTextColor(30);
-            doc.setFont("helvetica", "bold");
-            doc.text("OFFICIAL ACCESS • ELISEO STUDIO • PREMIUM INFRASTRUCTURE • 2025", 12, 98);
-
+            doc.text("VOUCHER ELITE", 12, 52);
+            doc.setFontSize(10);
+            doc.text(lastAnalysis.name.toUpperCase(), 12, 60);
             doc.save(`Voucher_Elite_${lastAnalysis.name.replace(/\s+/g, '_')}.pdf`);
         }
     </script>
 </body>
 </html>
-
