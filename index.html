@@ -136,7 +136,7 @@
 
         <div class="glass-panel p-8 md:p-10">
             
-            <div id="error-box" class="hidden bg-red-500/10 border border-red-500/20 text-red-500 p-4 rounded-2xl text-xs mb-6 text-center"></div>
+            <div id="error-box" class="hidden bg-red-500/10 border border-red-500/20 text-red-500 p-4 rounded-2xl text-[10px] mb-6 text-center leading-relaxed"></div>
 
             <!-- Form State -->
             <div id="form-state">
@@ -240,8 +240,8 @@
     </div>
 
     <script>
-        // Configuración Técnica
-        const apiKey = "AIzaSyCe6OQEA99aaymKg2k76P6XXxch1EY7MO0"; // Deja vacío para el entorno o coloca tu clave aquí
+        // CONFIGURACIÓN TÉCNICA
+        const apiKey = "AIzaSyCe6OQEA99aaymKg2k76P6XXxch1EY7MO0"; 
         const model = "gemini-2.5-flash-preview-09-2025";
         const whatsappNumber = "543795041420";
         
@@ -277,7 +277,6 @@
             }
         }
 
-        // Función Robusta de Conexión con Reintentos
         async function fetchAI(url, body, retries = 5) {
             for (let i = 0; i < retries; i++) {
                 try {
@@ -287,13 +286,17 @@
                         body: JSON.stringify(body)
                     });
                     
+                    const data = await response.json();
+                    
                     if (!response.ok) {
-                        const errorData = await response.json();
-                        throw new Error(errorData.error?.message || `HTTP Error ${response.status}`);
+                        throw new Error(data.error?.message || `HTTP Error ${response.status}`);
                     }
-                    return await response.json();
+                    return data;
                 } catch (err) {
-                    if (i === retries - 1) throw err;
+                    const msg = err.message.toLowerCase();
+                    if (msg.includes("referer") || msg.includes("leaked") || msg.includes("key") || i === retries - 1) {
+                        throw err;
+                    }
                     const wait = Math.pow(2, i) * 1000;
                     await new Promise(r => setTimeout(r, wait));
                 }
@@ -309,9 +312,7 @@
             const desc = document.getElementById('businessInput').value.trim();
 
             if (!name || !niche || desc.length < 20) {
-                const errBox = document.getElementById('error-box');
-                errBox.textContent = "Por favor, aporta más detalles sobre tu empresa (mín. 20 caracteres).";
-                errBox.classList.remove('hidden');
+                showError("Por favor, aporta más detalles sobre tu empresa (mín. 20 caracteres).");
                 return;
             }
 
@@ -334,6 +335,8 @@
             }`;
 
             try {
+                if (!apiKey) throw new Error("API Key no configurada.");
+
                 const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
                 
                 const data = await fetchAI(url, {
@@ -357,12 +360,16 @@
                 renderResults(lastAnalysis);
 
             } catch (error) {
-                console.error("Connection Error:", error);
                 loadingState.classList.add('hidden');
                 formState.classList.remove('hidden');
-                errBox.textContent = "Error de conexión: " + error.message + ". Intenta nuevamente.";
-                errBox.classList.remove('hidden');
+                showError(`<strong>Error de Configuración:</strong><br>${error.message}`);
             }
+        }
+
+        function showError(msg) {
+            const errBox = document.getElementById('error-box');
+            errBox.innerHTML = msg;
+            errBox.classList.remove('hidden');
         }
 
         function renderResults(data) {
@@ -398,15 +405,11 @@
                     </div>
                     <div class="tip-content space-y-4 pt-4">
                         <p class="text-xs text-gray-300 leading-relaxed">${tip.desc}</p>
-                        <div class="grid grid-cols-1 gap-2 pt-2 border-t border-white/5">
-                             <p class="text-[10px] text-green-500 italic"><span class="font-bold uppercase tracking-widest text-[8px] mr-2">Beneficio:</span> ${tip.benefit}</p>
-                             <p class="text-[10px] text-blue-400"><span class="font-bold uppercase tracking-widest text-[8px] mr-2">Tiempo:</span> ${tip.time}</p>
-                        </div>
                     </div>
                 `;
                 card.onclick = () => card.classList.toggle('expanded');
                 tipsContainer.appendChild(card);
-                setTimeout(() => card.classList.add('show'), 50);
+                setTimeout(() => card.classList.add('show'), 50 * index);
 
                 const item = document.createElement('div');
                 item.className = 'flex justify-between items-center opacity-80';
@@ -419,46 +422,104 @@
             checkUsageLimit();
         }
 
-        // --- PDF Y VOUCHER (LOGICA ORIGINAL) ---
         function downloadPDF() {
             if (!lastAnalysis) return;
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             const { name, niche, tips, desc, serial, date } = lastAnalysis;
-
             doc.setFillColor(0, 0, 0);
             doc.rect(0, 0, 210, 45, 'F');
             doc.setTextColor(255, 255, 255);
-            doc.setFont("helvetica", "bold");
             doc.setFontSize(24);
             doc.text("ELISEO STUDIO", 20, 28);
-            doc.setFontSize(9);
-            doc.text("CONSULTORÍA DIGITAL ESTRATÉGICA", 20, 36);
-            doc.text(`BRIEF DE PROYECTO WEB #${serial}`, 135, 28);
-
-            doc.setTextColor(0, 0, 0);
-            doc.setFontSize(11);
-            doc.text(`CLIENTE: ${name.toUpperCase()}`, 20, 60);
-            doc.text(`RUBRO: ${niche.toUpperCase()}`, 20, 67);
-            doc.text(`FECHA: ${date}`, 155, 60);
-
-            doc.save(`Auditoria_Web_EliseoStudio_${name.replace(/\s+/g, '_')}.pdf`);
+            doc.save(`Auditoria_${name}.pdf`);
         }
 
         function downloadVoucher() {
             if (!lastAnalysis) return;
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: [148, 105] });
-            doc.setFillColor(8, 8, 8);
+            const { name, niche, desc, serial, date } = lastAnalysis;
+            
+            // Fondo Negro Premium
+            doc.setFillColor(5, 5, 5);
             doc.rect(0, 0, 148, 105, 'F');
+            
+            // Bordes Elegantes
+            doc.setDrawColor(28, 28, 30);
+            doc.setLineWidth(0.5);
+            doc.rect(5, 5, 138, 95); 
+            
+            doc.setDrawColor(0, 113, 227); // Azul Apple
+            doc.setLineWidth(0.2);
+            doc.line(10, 25, 138, 25);
+            
+            // Logo "e."
+            doc.setFillColor(255, 255, 255);
+            doc.rect(12, 10, 8, 8, 'F');
+            doc.setTextColor(0, 0, 0);
+            doc.setFontSize(8);
+            doc.setFont("helvetica", "bold");
+            doc.text("e.", 14, 16);
+            
+            // Header Identidad
             doc.setTextColor(255, 255, 255);
+            doc.setFontSize(7);
+            doc.text("ELISEO STUDIO | ESTRATEGA IA", 24, 15);
+            doc.setFontSize(6);
+            doc.setTextColor(100);
+            doc.text("SISTEMA DE ARQUITECTURA DIGITAL", 24, 18);
+            
+            // Serial & Fecha (Top Right)
+            doc.setFontSize(6);
+            doc.setTextColor(150);
+            doc.text(`ID: ${serial}`, 120, 15);
+            doc.text(`FECHA: ${date}`, 120, 18);
+            
+            // Título Principal
+            doc.setFontSize(14);
+            doc.setTextColor(255, 255, 255);
+            doc.setFont("helvetica", "bold");
+            doc.text("VOUCHER ELITE", 12, 35);
+            
+            // Información del Socio (Usuario)
+            doc.setFontSize(7);
+            doc.setTextColor(100);
+            doc.text("SOCIO ACREDITADO:", 12, 45);
+            
             doc.setFontSize(18);
-            doc.text("VOUCHER ELITE", 12, 52);
-            doc.setFontSize(10);
-            doc.text(lastAnalysis.name.toUpperCase(), 12, 60);
-            doc.save(`Voucher_Elite_${lastAnalysis.name.replace(/\s+/g, '_')}.pdf`);
+            doc.setTextColor(255, 255, 255);
+            doc.text(name.toUpperCase(), 12, 55);
+            
+            doc.setFontSize(9);
+            doc.setTextColor(0, 113, 227);
+            doc.text(`RUBRO: ${niche.toUpperCase()}`, 12, 63);
+            
+            // Contexto del Negocio (Pequeño resumen)
+            doc.setFontSize(7);
+            doc.setTextColor(100);
+            doc.setFont("helvetica", "normal");
+            const dLines = doc.splitTextToSize(`ENFOQUE: ${desc}`, 120);
+            doc.text(dLines, 12, 72);
+            
+            // Leyenda y Mensaje Final
+            doc.setDrawColor(40, 40, 40);
+            doc.line(12, 85, 50, 85);
+            
+            doc.setFontSize(7);
+            doc.setTextColor(150);
+            doc.setFont("helvetica", "italic");
+            const legend = "Este documento certifica el acceso prioritario a la arquitectura estratégica diseñada para potenciar su marca. La visión plasmada hoy es el estándar del mañana.";
+            const lLines = doc.splitTextToSize(legend, 120);
+            doc.text(lLines, 12, 90);
+            
+            doc.setFontSize(5);
+            doc.setTextColor(60);
+            doc.setFont("helvetica", "bold");
+            doc.text("EL FUTURO PERTENECE A QUIENES DISEÑAN SU PROPIO ESTÁNDAR — ELISEO STUDIO 2025", 12, 100);
+            
+            doc.save(`Voucher_Elite_${name.replace(/\s+/g, '_')}.pdf`);
         }
     </script>
 </body>
 </html>
-
