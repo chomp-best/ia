@@ -6,6 +6,7 @@
     <title>Estratega IA | Eliseo Studio</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- jsPDF Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap');
@@ -51,12 +52,6 @@
         .btn-ai:hover:not(:disabled) {
             transform: translateY(-2px);
             background: #f5f5f7;
-        }
-
-        .btn-ai:disabled {
-            background: #1c1c1e;
-            color: #444;
-            cursor: not-allowed;
         }
 
         .invoice-box {
@@ -111,15 +106,18 @@
         .fade-up { animation: fadeUp 0.8s ease-out forwards; }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        .error-message {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            color: #ef4444;
+        .scarcity-legend {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
             padding: 1rem;
             border-radius: 16px;
-            font-size: 0.8rem;
-            margin-bottom: 1rem;
-            display: none;
+            text-align: center;
+        }
+
+        .thanks-box {
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding-top: 2rem;
+            text-align: center;
         }
     </style>
 </head>
@@ -127,6 +125,7 @@
 
     <div class="apple-container fade-up">
         
+        <!-- Header -->
         <div class="text-center mb-10">
             <div class="w-14 h-14 bg-white rounded-2xl mx-auto flex items-center justify-center mb-6 shadow-xl">
                 <i class="fa-solid fa-wand-magic-sparkles text-black text-2xl"></i>
@@ -137,8 +136,9 @@
 
         <div class="glass-panel p-8 md:p-10">
             
-            <div id="error-box" class="error-message"></div>
+            <div id="error-box" class="hidden bg-red-500/10 border border-red-500/20 text-red-500 p-4 rounded-2xl text-xs mb-6 text-center"></div>
 
+            <!-- Form State -->
             <div id="form-state">
                 <div class="space-y-6">
                     <div>
@@ -162,52 +162,74 @@
                             placeholder="Describe qué buscas lograr hoy (min. 20 caracteres)..."></textarea>
                     </div>
                 </div>
+
+                <div class="scarcity-legend mt-8">
+                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em] mb-1">Nota de Cortesía</p>
+                    <p class="text-[11px] text-gray-600 leading-relaxed italic">
+                        Este diagnóstico utiliza el motor de IA de Eliseo Studio y está limitado a **una única consulta**. Por favor, sea preciso para obtener el máximo valor estratégico.
+                    </p>
+                </div>
                 
-                <button onclick="generateStrategy()" id="submitBtn" class="btn-ai w-full py-4 rounded-2xl font-bold text-sm mt-8">
+                <button onclick="generateStrategy()" id="submitBtn" class="btn-ai w-full py-4 rounded-2xl font-bold text-sm mt-4 transition-all">
                     Diseñar Hoja de Ruta Web
                 </button>
-                <p id="usage-warning" class="text-[9px] text-gray-600 text-center mt-4 uppercase tracking-widest hidden">Has completado tu consulta única de cortesía.</p>
             </div>
 
+            <!-- Loading State -->
             <div id="loading-state" class="hidden py-10 text-center">
                 <div class="loader mx-auto mb-6"></div>
                 <p class="text-sm text-gray-400 font-medium">Analizando el mercado y diseñando la interfaz ideal...</p>
             </div>
 
+            <!-- Result State -->
             <div id="result-state" class="hidden">
                 <div class="flex items-center justify-between mb-8">
                     <h2 class="text-lg font-bold text-white">Estrategia Web</h2>
                     <span class="text-[10px] font-bold text-purple-500 uppercase tracking-widest bg-purple-500/10 px-3 py-1 rounded-full">Visión IA</span>
                 </div>
                 
+                <!-- Tips Container -->
                 <div id="tips-container" class="space-y-4 mb-8"></div>
 
+                <!-- Invoice Summary -->
                 <div id="invoice-summary" class="invoice-box mb-10">
                     <div class="flex justify-between items-center mb-4 pb-2 border-b border-white/10">
                         <span class="text-[10px] font-bold text-gray-500 uppercase">Resumen del Proyecto</span>
-                        <span class="text-[10px] text-gray-500" id="invoiceVersion">v1.3</span>
+                        <span class="text-[10px] text-gray-500">v1.4</span>
                     </div>
                     <div id="invoice-items" class="space-y-3 text-[11px]"></div>
-                    <div class="mt-6 pt-4 border-t border-white/10 flex justify-between items-center">
-                        <span class="text-[10px] font-bold text-purple-400">STATUS:</span>
-                        <span class="text-[10px] font-bold text-white uppercase tracking-widest">Listo para Ejecutar</span>
-                    </div>
                 </div>
 
-                <div class="space-y-3">
-                    <a id="whatsappBtn" href="#" target="_blank" class="bg-[#25d366] text-white w-full py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-3 shadow-lg shadow-green-500/20">
+                <!-- Thanks and Actions -->
+                <div class="thanks-box space-y-6">
+                    <div class="mb-8">
+                        <h3 class="text-sm font-bold mb-2 text-white">Gracias por confiar en el sistema.</h3>
+                        <p class="text-[11px] text-gray-500 italic leading-relaxed">"La excelencia no es un acto, es un estándar de diseño." — Eliseo Studio</p>
+                    </div>
+
+                    <a id="whatsappBtn" href="#" target="_blank" class="bg-[#25d366] text-white w-full py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-3 shadow-lg shadow-green-500/20 transition-transform active:scale-[0.98]">
                         <i class="fa-brands fa-whatsapp text-lg"></i>
                         Iniciar Proyecto vía WhatsApp
                     </a>
                     
-                    <button onclick="downloadPDF()" class="bg-white/5 border border-white/10 text-white w-full py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-3 hover:bg-white/10 transition-all">
-                        <i class="fa-solid fa-file-pdf text-lg text-red-500"></i>
-                        Descargar Plan Completo
-                    </button>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button onclick="downloadPDF()" class="bg-white/5 border border-white/10 text-white py-4 rounded-2xl font-bold text-[11px] flex items-center justify-center gap-2 hover:bg-white/10 transition-all">
+                            <i class="fa-solid fa-file-pdf text-red-500"></i>
+                            PLAN COMPLETO
+                        </button>
 
-                    <p id="limit-reached-msg" class="text-[9px] text-gray-700 text-center mt-6 uppercase tracking-widest hidden">Consulta única completada. Contacta para un análisis profundo.</p>
+                        <button onclick="downloadVoucher()" class="bg-blue-600 text-white py-4 rounded-2xl font-bold text-[11px] flex items-center justify-center gap-2 hover:bg-blue-500 transition-all shadow-lg shadow-blue-500/20">
+                            <i class="fa-solid fa-address-card"></i>
+                            VOUCHER ELITE
+                        </button>
+                    </div>
+
+                    <p id="limit-reached-msg" class="text-[9px] text-gray-700 uppercase tracking-widest pt-4 font-bold">
+                        Consulta única completada. Contactar por WhatsApp para un análisis profundo.
+                    </p>
                 </div>
             </div>
+
         </div>
 
         <div class="mt-12 text-center">
@@ -220,14 +242,12 @@
     <script>
         const apiKey = "AIzaSyDDllTz55AUk2KYLHAnuB5Nkwt1QEyr0zY"; 
         const model = "gemini-2.5-flash-preview-09-2025";
-        const whatsappNumber = "3795041420";
-        const personalEmail = "olivellaeliseo@gmail.com";
+        const whatsappNumber = "543795041420";
         
         const STORAGE_KEY = 'eliseo_studio_last_strategy';
         const COUNTER_KEY = 'eliseo_studio_query_count';
         const MAX_QUERIES = 1; 
         
-        let hasAsked = false;
         let lastAnalysis = null;
 
         window.onload = () => {
@@ -237,7 +257,6 @@
                 try {
                     lastAnalysis = JSON.parse(savedData);
                     renderResults(lastAnalysis);
-                    hasAsked = true;
                 } catch (e) {
                     localStorage.removeItem(STORAGE_KEY);
                 }
@@ -248,127 +267,14 @@
             const count = parseInt(localStorage.getItem(COUNTER_KEY) || "0");
             const submitBtn = document.getElementById('submitBtn');
             const usageWarning = document.getElementById('usage-warning');
-            const limitMsg = document.getElementById('limit-reached-msg');
 
             if (count >= MAX_QUERIES) {
                 if (submitBtn) {
                     submitBtn.disabled = true;
                     submitBtn.textContent = "Consulta Completada";
-                    usageWarning.classList.remove('hidden');
-                }
-                if (limitMsg) {
-                    limitMsg.classList.remove('hidden');
+                    if (usageWarning) usageWarning.classList.remove('hidden');
                 }
             }
-        }
-
-        function incrementCounter() {
-            let count = parseInt(localStorage.getItem(COUNTER_KEY) || "0");
-            localStorage.setItem(COUNTER_KEY, (count + 1).toString());
-        }
-
-        function showError(msg) {
-            const errorBox = document.getElementById('error-box');
-            errorBox.textContent = msg;
-            errorBox.style.display = 'block';
-            setTimeout(() => { errorBox.style.display = 'none'; }, 5000);
-        }
-
-        async function fetchWithRetry(url, options, retries = 5) {
-            const delays = [1000, 2000, 4000, 8000, 16000];
-            for (let i = 0; i <= retries; i++) {
-                try {
-                    const response = await fetch(url, options);
-                    if (response.ok) return response;
-                    if (i === retries) throw new Error("API Error");
-                } catch (err) {
-                    if (i === retries) throw err;
-                }
-                await new Promise(resolve => setTimeout(resolve, delays[i]));
-            }
-        }
-
-        function renderResults(data) {
-            const formState = document.getElementById('form-state');
-            const resultState = document.getElementById('result-state');
-            const tipsContainer = document.getElementById('tips-container');
-            const invoiceItems = document.getElementById('invoice-items');
-            const whatsappBtn = document.getElementById('whatsappBtn');
-
-            formState.classList.add('hidden');
-            resultState.classList.remove('hidden');
-            
-            tipsContainer.innerHTML = '';
-            invoiceItems.innerHTML = '';
-
-            const headerItem = document.createElement('div');
-            headerItem.className = 'mb-4 text-gray-400 border-b border-white/5 pb-2 text-[9px] uppercase tracking-tighter';
-            headerItem.innerHTML = `TITULAR: ${data.name}<br>RUBRO: ${data.niche}`;
-            invoiceItems.appendChild(headerItem);
-
-            data.tips.forEach((tip, index) => {
-                const isLast = index === 2;
-                const card = document.createElement('div');
-                card.className = `tip-card ${isLast ? 'premium-tip' : ''}`;
-                card.style.transitionDelay = `${index * 150}ms`;
-                
-                const originalIcons = ['fa-layer-group', 'fa-gears', 'fa-crown'];
-                const iconClass = originalIcons[index] || 'fa-star';
-
-                card.innerHTML = `
-                    <div class="tip-header flex justify-between items-start">
-                        <div class="flex-grow">
-                            <span class="tip-number">${isLast ? 'Sello Eliseo Studio' : `Estrategia Web 0${index + 1}`}</span>
-                            <h3 class="font-bold text-white tracking-tight">${tip.title}</h3>
-                        </div>
-                        <div class="flex flex-col items-end gap-2">
-                            <i class="fa-solid ${iconClass} ${isLast ? 'text-purple-500' : 'text-gray-600'} text-sm opacity-60"></i>
-                            <i class="fa-solid fa-plus expand-icon"></i>
-                        </div>
-                    </div>
-                    <div class="tip-content space-y-4 pt-4">
-                        <div>
-                            <p class="text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1">Arquitectura</p>
-                            <p class="text-xs text-gray-300 leading-relaxed">${tip.desc}</p>
-                        </div>
-                        <div class="grid grid-cols-1 gap-2 pt-2">
-                            <div>
-                                <p class="text-[9px] font-bold text-green-500 uppercase tracking-widest mb-1">Beneficio Web</p>
-                                <p class="text-[10px] text-gray-400 italic">${tip.benefit}</p>
-                            </div>
-                            <div>
-                                <p class="text-[9px] font-bold text-blue-500 uppercase tracking-widest mb-1">Tiempo de Desarrollo</p>
-                                <p class="text-[10px] text-gray-400">${tip.time}</p>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                card.onclick = () => card.classList.toggle('expanded');
-                tipsContainer.appendChild(card);
-                setTimeout(() => card.classList.add('show'), 50);
-
-                const item = document.createElement('div');
-                item.className = 'flex justify-between items-center opacity-80';
-                item.innerHTML = `
-                    <span>${tip.title.toUpperCase()}</span>
-                    <span class="text-gray-600">[OK]</span>
-                `;
-                invoiceItems.appendChild(item);
-            });
-
-            // --- MENSAJE DE WHATSAPP CON PLAN DETALLADO ---
-            let waText = `Hola Eliseo! Soy *${data.name}* (${data.niche}).\n\nAcabo de generar mi Hoja de Ruta con el Estratega IA y quiero iniciar el proyecto de inmediato. Aquí está el plan detallado:\n`;
-            data.tips.forEach((t, i) => {
-                waText += `\n*Pilar ${i+1}: ${t.title}*`;
-                waText += `\n- Estrategia: ${t.desc}`;
-                waText += `\n- Beneficio: ${t.benefit}`;
-                waText += `\n- Tiempo: ${t.time}\n`;
-            });
-            waText += `\nQuedo a la espera de los pasos para realizar el pago inicial y reservar mi lugar en la agenda.`;
-            
-            whatsappBtn.href = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(waText)}`;
-            
-            checkUsageLimit();
         }
 
         async function generateStrategy() {
@@ -380,7 +286,9 @@
             const desc = document.getElementById('businessInput').value.trim();
 
             if (!name || !niche || desc.length < 20) {
-                showError("Por favor, aporta más detalles sobre tu empresa para un mejor análisis.");
+                const errBox = document.getElementById('error-box');
+                errBox.textContent = "Por favor, aporta más detalles sobre tu empresa.";
+                errBox.classList.remove('hidden');
                 return;
             }
 
@@ -402,7 +310,7 @@
 
             try {
                 const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-                const response = await fetchWithRetry(url, {
+                const response = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -414,33 +322,89 @@
 
                 const data = await response.json();
                 const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-                if (!rawText) throw new Error("Response empty");
-
                 const jsonResponse = JSON.parse(rawText);
-                lastAnalysis = { ...jsonResponse, name, niche, desc };
+                
+                const serial = "ES-" + Math.floor(Math.random() * 900000 + 100000);
+                const date = new Date().toLocaleDateString('es-AR');
+
+                lastAnalysis = { ...jsonResponse, name, niche, desc, serial, date };
                 
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(lastAnalysis));
-                incrementCounter();
+                localStorage.setItem(COUNTER_KEY, (count + 1).toString());
 
                 loadingState.classList.add('hidden');
                 renderResults(lastAnalysis);
-                hasAsked = true;
 
             } catch (error) {
-                console.error(error);
                 loadingState.classList.add('hidden');
                 formState.classList.remove('hidden');
-                showError("Conexión interrumpida. Por favor, intenta de nuevo.");
+                const errBox = document.getElementById('error-box');
+                errBox.textContent = "Error de conexión. Por favor reintenta.";
+                errBox.classList.remove('hidden');
             }
+        }
+
+        function renderResults(data) {
+            const formState = document.getElementById('form-state');
+            const resultState = document.getElementById('result-state');
+            const tipsContainer = document.getElementById('tips-container');
+            const invoiceItems = document.getElementById('invoice-items');
+            const whatsappBtn = document.getElementById('whatsappBtn');
+
+            formState.classList.add('hidden');
+            resultState.classList.remove('hidden');
+            
+            tipsContainer.innerHTML = '';
+            invoiceItems.innerHTML = '';
+
+            const originalIcons = ['fa-layer-group', 'fa-gears', 'fa-crown'];
+
+            data.tips.forEach((tip, index) => {
+                const isLast = index === 2;
+                const card = document.createElement('div');
+                card.className = `tip-card ${isLast ? 'premium-tip' : ''}`;
+                
+                card.innerHTML = `
+                    <div class="tip-header flex justify-between items-start">
+                        <div class="flex-grow">
+                            <span class="tip-number">${isLast ? 'Sello Eliseo Studio' : `Estrategia 0${index + 1}`}</span>
+                            <h3 class="font-bold text-white tracking-tight">${tip.title}</h3>
+                        </div>
+                        <div class="flex flex-col items-end gap-2">
+                            <i class="fa-solid ${originalIcons[index]} ${isLast ? 'text-purple-500' : 'text-gray-600'} text-sm opacity-60"></i>
+                            <i class="fa-solid fa-plus expand-icon"></i>
+                        </div>
+                    </div>
+                    <div class="tip-content space-y-4 pt-4">
+                        <p class="text-xs text-gray-300 leading-relaxed">${tip.desc}</p>
+                        <div class="grid grid-cols-1 gap-2 pt-2 border-t border-white/5">
+                             <p class="text-[10px] text-green-500 italic"><span class="font-bold uppercase tracking-widest text-[8px] mr-2">Beneficio:</span> ${tip.benefit}</p>
+                             <p class="text-[10px] text-blue-400"><span class="font-bold uppercase tracking-widest text-[8px] mr-2">Tiempo:</span> ${tip.time}</p>
+                        </div>
+                    </div>
+                `;
+                card.onclick = () => card.classList.toggle('expanded');
+                tipsContainer.appendChild(card);
+                setTimeout(() => card.classList.add('show'), 50);
+
+                const item = document.createElement('div');
+                item.className = 'flex justify-between items-center opacity-80';
+                item.innerHTML = `<span>${tip.title.toUpperCase()}</span><span class="text-gray-600">[OK]</span>`;
+                invoiceItems.appendChild(item);
+            });
+
+            let waText = `Hola Eliseo! Soy *${data.name}*. Acabo de generar mi Hoja de Ruta IA para mi negocio de *${data.niche}* y quiero iniciar el proyecto de inmediato. ID: ${data.serial}`;
+            whatsappBtn.href = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(waText)}`;
+            checkUsageLimit();
         }
 
         function downloadPDF() {
             if (!lastAnalysis) return;
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            const { name, niche, tips, desc } = lastAnalysis;
+            const { name, niche, tips, desc, serial, date } = lastAnalysis;
 
-            // --- CABECERA ORIGINAL ---
+            // --- HEADER ---
             doc.setFillColor(0, 0, 0);
             doc.rect(0, 0, 210, 45, 'F');
             doc.setTextColor(255, 255, 255);
@@ -450,9 +414,9 @@
             doc.setFontSize(9);
             doc.setFont("helvetica", "normal");
             doc.text("CONSULTORÍA DIGITAL ESTRATÉGICA", 20, 36);
-            doc.text("BRIEF DE PROYECTO WEB #" + Math.floor(Math.random() * 9000), 135, 28);
+            doc.text(`BRIEF DE PROYECTO WEB #${serial}`, 135, 28);
 
-            // --- INFORMACIÓN DE CLIENTE ---
+            // --- CLIENT INFO ---
             doc.setTextColor(0, 0, 0);
             doc.setFontSize(11);
             doc.setFont("helvetica", "bold");
@@ -460,9 +424,9 @@
             doc.text(`RUBRO: ${niche.toUpperCase()}`, 20, 67);
             doc.setFont("helvetica", "normal");
             doc.setFontSize(8);
-            doc.text("FECHA DE EMISIÓN: " + new Date().toLocaleDateString(), 155, 60);
+            doc.text(`FECHA DE EMISIÓN: ${date}`, 155, 60);
 
-            // --- CONTEXTO DEL NEGOCIO ---
+            // --- CONTEXT ---
             doc.setFontSize(10);
             doc.setFont("helvetica", "bold");
             doc.text("CONTEXTO DEL NEGOCIO:", 20, 80);
@@ -476,13 +440,12 @@
             doc.line(20, currentY, 190, currentY);
             currentY += 15;
 
-            // --- TÍTULO DE ESTRATEGIA ---
+            // --- PILARES TÁCTICOS ---
             doc.setFontSize(14);
             doc.setFont("helvetica", "bold");
             doc.text("PLAN DE DESARROLLO Y BENEFICIOS", 20, currentY);
             currentY += 12;
 
-            // --- PILARES TÁCTICOS ---
             tips.forEach((tip, i) => {
                 const tipLines = doc.splitTextToSize(tip.desc, 160);
                 const benefitLines = doc.splitTextToSize(tip.benefit || "", 135);
@@ -504,7 +467,6 @@
                 doc.text(tipLines, 25, currentY + 17);
                 
                 let textY = currentY + 17 + (tipLines.length * 5) + 5;
-                
                 doc.setTextColor(34, 197, 94);
                 doc.setFont("helvetica", "bold");
                 doc.text("BENEFICIO:", 25, textY);
@@ -513,7 +475,6 @@
                 doc.text(benefitLines, 50, textY);
                 
                 textY += (benefitLines.length * 5) + 2;
-                
                 doc.setTextColor(0, 113, 227);
                 doc.setFont("helvetica", "bold");
                 doc.text("TIEMPO DESARROLLO:", 25, textY);
@@ -524,7 +485,7 @@
                 currentY += boxHeight + 10;
             });
 
-            // --- PROTOCOLO DE INICIO ---
+            // --- PROTOCOLO DE INICIO (ORIGINAL INFO) ---
             if (currentY > 200) { doc.addPage(); currentY = 20; } else { currentY += 10; }
             
             doc.setDrawColor(0);
@@ -558,7 +519,7 @@
 
             currentY += 15;
 
-            // --- MENSAJE INTROSPECTIVO ---
+            // --- MENSAJE INTROSPECTIVO (ORIGINAL INFO) ---
             doc.setDrawColor(168, 85, 247);
             doc.setLineWidth(0.5);
             doc.line(20, currentY, 40, currentY);
@@ -574,7 +535,7 @@
             doc.setTextColor(168, 85, 247);
             doc.text("CON GRATITUD, ELISEO.", 20, currentY);
 
-            // --- BLOQUE DE CONTACTO ---
+            // --- CONTACT BLOCK ---
             currentY += 10;
             if (currentY > 250) { doc.addPage(); currentY = 20; }
             doc.setFillColor(0, 0, 0);
@@ -586,6 +547,76 @@
             doc.text(`WhatsApp: +${whatsappNumber}`, 30, currentY + 18);
 
             doc.save(`Auditoria_Web_EliseoStudio_${name.replace(/\s+/g, '_')}.pdf`);
+        }
+
+        function downloadVoucher() {
+            if (!lastAnalysis) return;
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: [148, 105] });
+            
+            // Black Background
+            doc.setFillColor(8, 8, 8);
+            doc.rect(0, 0, 148, 105, 'F');
+
+            // Logo Box
+            doc.setFillColor(255, 255, 255);
+            doc.rect(12, 12, 10, 10, 'F');
+            doc.setTextColor(0, 0, 0);
+            doc.setFontSize(9);
+            doc.setFont("helvetica", "bold");
+            doc.text("e.", 15, 19);
+
+            // Studio Identity
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(8);
+            doc.setFont("helvetica", "bold");
+            doc.text("ELISEO STUDIO", 26, 16.5);
+            doc.setFontSize(6);
+            doc.setTextColor(100);
+            doc.text("STRATEGY • DESIGN • AI", 26, 20);
+
+            // ID and Date
+            doc.setFontSize(7);
+            doc.setTextColor(150);
+            doc.text(`ID: ${lastAnalysis.serial}`, 115, 17);
+            doc.text(`DATE: ${lastAnalysis.date}`, 115, 21);
+
+            doc.setDrawColor(255, 255, 255, 0.05);
+            doc.line(12, 30, 136, 30);
+
+            // User Info
+            doc.setFontSize(7);
+            doc.setTextColor(80);
+            doc.text("SOCIO ESTRATÉGICO ACREDITADO", 12, 40);
+
+            doc.setFontSize(18);
+            doc.setTextColor(255, 255, 255);
+            doc.setFont("helvetica", "bold");
+            doc.text(lastAnalysis.name.toUpperCase(), 12, 52);
+
+            doc.setFontSize(8);
+            doc.setTextColor(0, 113, 227);
+            doc.text(`RUBRO: ${lastAnalysis.niche.toUpperCase()}`, 12, 60);
+
+            doc.setTextColor(100);
+            doc.setFontSize(7);
+            doc.setFont("helvetica", "normal");
+            const detailsText = `RESUMEN DE VISIÓN: ${lastAnalysis.desc}`;
+            const detailLines = doc.splitTextToSize(detailsText, 120);
+            doc.text(detailLines, 12, 68);
+
+            // Phrase
+            doc.setFontSize(9);
+            doc.setTextColor(200);
+            doc.setFont("helvetica", "italic");
+            doc.text('"El futuro pertenece a quienes diseñan su propio estándar."', 12, 88);
+
+            doc.setFontSize(5);
+            doc.setTextColor(30);
+            doc.setFont("helvetica", "bold");
+            doc.text("OFFICIAL ACCESS • ELISEO STUDIO • PREMIUM INFRASTRUCTURE • 2025", 12, 98);
+
+            doc.save(`Voucher_Elite_${lastAnalysis.name.replace(/\s+/g, '_')}.pdf`);
         }
     </script>
 </body>
