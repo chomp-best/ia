@@ -72,7 +72,8 @@
             transform: translateY(10px);
             cursor: pointer;
             overflow: hidden;
-            max-height: 80px;
+            max-height: 85px;
+            position: relative;
         }
 
         .tip-card.show { opacity: 1; transform: translateY(0); }
@@ -118,6 +119,15 @@
             border-top: 1px solid rgba(255, 255, 255, 0.05);
             padding-top: 2rem;
             text-align: center;
+        }
+
+        .time-badge {
+            font-size: 9px;
+            background: rgba(255,255,255,0.05);
+            padding: 2px 8px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #888;
         }
     </style>
 </head>
@@ -183,8 +193,13 @@
 
             <!-- Result State -->
             <div id="result-state" class="hidden">
-                <div class="flex items-center justify-between mb-8">
-                    <h2 class="text-lg font-bold text-white">Estrategia Web</h2>
+                <div class="mb-6 text-center">
+                    <p class="text-[10px] font-black text-blue-500 uppercase tracking-[0.3em] mb-1">Hoja de Ruta</p>
+                    <h2 class="text-xl font-bold text-white tracking-tight">PLAN DE IMPLEMENTACIÓN</h2>
+                </div>
+                
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Estrategias Prioritarias</span>
                     <span class="text-[10px] font-bold text-purple-500 uppercase tracking-widest bg-purple-500/10 px-3 py-1 rounded-full">Visión IA</span>
                 </div>
                 
@@ -195,7 +210,7 @@
                 <div id="invoice-summary" class="invoice-box mb-10">
                     <div class="flex justify-between items-center mb-4 pb-2 border-b border-white/10">
                         <span class="text-[10px] font-bold text-gray-500 uppercase">Resumen del Proyecto</span>
-                        <span class="text-[10px] text-gray-500">v1.4</span>
+                        <span class="text-[10px] text-gray-500">v1.5</span>
                     </div>
                     <div id="invoice-items" class="space-y-3 text-[11px]"></div>
                 </div>
@@ -245,7 +260,7 @@
         const model = "gemini-2.5-flash-preview-09-2025";
         const whatsappNumber = "543795041420";
         
-        const STORAGE_KEY = 'eliseo_studio_last_strategy';
+        const STORAGE_KEY = 'eliseo_studio_last_strategy_v1.5';
         const COUNTER_KEY = 'eliseo_studio_query_count';
         const MAX_QUERIES = 1; 
         
@@ -328,15 +343,16 @@
             Responde estrictamente en JSON: 
             {
               "tips": [
-                {"title": "Arquitectura de Interfaz", "desc": "...", "benefit": "...", "time": "2-3 días"},
-                {"title": "Motor de Conversión", "desc": "...", "benefit": "...", "time": "2-3 días"},
-                {"title": "Sello Eliseo Studio", "desc": "...", "benefit": "Diseño Premium Apple-Style", "time": "1 día"}
+                {"title": "...", "desc": "...", "benefit": "...", "time": "X días", "icon": "fa-icono-fontawesome"},
+                {"title": "...", "desc": "...", "benefit": "...", "time": "X días", "icon": "fa-icono-fontawesome"},
+                {"title": "...", "desc": "...", "benefit": "...", "time": "X días", "icon": "fa-icono-fontawesome"}
               ]
-            }`;
+            }
+            IMPORTANTE: 
+            1. La suma de los 'time' de los 3 pilares debe ser como MÁXIMO 7 días en total.
+            2. 'icon' debe ser una clase válida de FontAwesome 6 (ej: fa-rocket, fa-chart-line, fa-palette, fa-code, fa-shop).`;
 
             try {
-                if (!apiKey) throw new Error("API Key no configurada.");
-
                 const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
                 
                 const data = await fetchAI(url, {
@@ -362,7 +378,7 @@
             } catch (error) {
                 loadingState.classList.add('hidden');
                 formState.classList.remove('hidden');
-                showError(`<strong>Error de Configuración:</strong><br>${error.message}`);
+                showError(`<strong>Error:</strong> ${error.message}`);
             }
         }
 
@@ -385,8 +401,6 @@
             tipsContainer.innerHTML = '';
             invoiceItems.innerHTML = '';
 
-            const originalIcons = ['fa-layer-group', 'fa-gears', 'fa-crown'];
-
             data.tips.forEach((tip, index) => {
                 const isLast = index === 2;
                 const card = document.createElement('div');
@@ -394,17 +408,24 @@
                 
                 card.innerHTML = `
                     <div class="tip-header flex justify-between items-start">
-                        <div class="flex-grow">
-                            <span class="tip-number">${isLast ? 'Sello Eliseo Studio' : `Estrategia 0${index + 1}`}</span>
-                            <h3 class="font-bold text-white tracking-tight">${tip.title}</h3>
+                        <div class="flex-grow pr-8">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="tip-number">${isLast ? 'Sello Eliseo Studio' : `Estrategia 0${index + 1}`}</span>
+                                <span class="time-badge">${tip.time || 'N/A'}</span>
+                            </div>
+                            <h3 class="font-bold text-white tracking-tight text-sm">${tip.title}</h3>
                         </div>
-                        <div class="flex flex-col items-end gap-2">
-                            <i class="fa-solid ${originalIcons[index]} ${isLast ? 'text-purple-500' : 'text-gray-600'} text-sm opacity-60"></i>
+                        <div class="flex flex-col items-end gap-3 absolute right-5 top-5">
+                            <i class="fa-solid ${tip.icon || 'fa-star'} ${isLast ? 'text-purple-500' : 'text-blue-500'} text-lg opacity-80"></i>
                             <i class="fa-solid fa-plus expand-icon"></i>
                         </div>
                     </div>
                     <div class="tip-content space-y-4 pt-4">
-                        <p class="text-xs text-gray-300 leading-relaxed">${tip.desc}</p>
+                        <p class="text-[11px] text-gray-300 leading-relaxed">${tip.desc}</p>
+                        <div class="bg-white/5 p-3 rounded-xl border border-white/5">
+                            <p class="text-[9px] font-bold text-gray-500 uppercase mb-1">Beneficios</p>
+                            <p class="text-[10px] text-green-400 italic">${tip.benefit}</p>
+                        </div>
                     </div>
                 `;
                 card.onclick = () => card.classList.toggle('expanded');
@@ -413,48 +434,174 @@
 
                 const item = document.createElement('div');
                 item.className = 'flex justify-between items-center opacity-80';
-                item.innerHTML = `<span>${tip.title.toUpperCase()}</span><span class="text-gray-600">[OK]</span>`;
+                item.innerHTML = `<span>${tip.title.toUpperCase()}</span><span class="text-gray-600">[${tip.time}]</span>`;
                 invoiceItems.appendChild(item);
             });
 
-            let waText = `Hola Eliseo! Soy *${data.name}*. Acabo de generar mi Hoja de Ruta IA para mi negocio de *${data.niche}* y quiero iniciar el proyecto de inmediato. ID: ${data.serial}`;
+            let waText = `Hola Eliseo! Soy *${data.name}*. Acabo de generar mi Plan de Implementación IA para mi negocio de *${data.niche}* y quiero iniciar el proyecto. ID: ${data.serial}`;
             whatsappBtn.href = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(waText)}`;
             checkUsageLimit();
         }
 
         function downloadPDF() {
             if (!lastAnalysis) return;
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
+            
+            const JsPDF = window.jspdf ? window.jspdf.jsPDF : window.jsPDF;
+            if (!JsPDF) return;
+
+            const doc = new JsPDF();
             const { name, niche, tips, desc, serial, date } = lastAnalysis;
+            
+            // --- ESTILO HEADER ---
             doc.setFillColor(0, 0, 0);
-            doc.rect(0, 0, 210, 45, 'F');
+            doc.rect(0, 0, 210, 50, 'F');
             doc.setTextColor(255, 255, 255);
-            doc.setFontSize(24);
-            doc.text("ELISEO STUDIO", 20, 28);
-            doc.save(`Auditoria_${name}.pdf`);
+            doc.setFontSize(26);
+            doc.setFont("helvetica", "bold");
+            doc.text("ELISEO STUDIO", 20, 30);
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "normal");
+            doc.text("ESTRATEGIA IA | PLAN DE IMPLEMENTACIÓN", 20, 38);
+            doc.text(`ID: ${serial}`, 160, 30);
+            doc.text(`FECHA: ${date}`, 160, 35);
+
+            // --- DATOS DEL CLIENTE ---
+            doc.setTextColor(0, 0, 0);
+            doc.setFontSize(12);
+            doc.setFont("helvetica", "bold");
+            doc.text("ANÁLISIS DE SOCIO", 20, 65);
+            doc.setDrawColor(0, 113, 227);
+            doc.setLineWidth(1);
+            doc.line(20, 68, 40, 68);
+
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "bold");
+            doc.text("NOMBRE:", 20, 78);
+            doc.setFont("helvetica", "normal");
+            doc.text(name.toUpperCase(), 50, 78);
+
+            doc.setFont("helvetica", "bold");
+            doc.text("MERCADO:", 20, 85);
+            doc.setFont("helvetica", "normal");
+            doc.text(niche.toUpperCase(), 50, 85);
+
+            doc.setFont("helvetica", "bold");
+            doc.text("OBJETIVO:", 20, 92);
+            doc.setFont("helvetica", "normal");
+            const businessDescLines = doc.splitTextToSize(desc, 140);
+            doc.text(businessDescLines, 50, 92);
+
+            // --- PLAN ESTRATÉGICO ---
+            let yPos = 115;
+            doc.setFontSize(12);
+            doc.setFont("helvetica", "bold");
+            doc.text("HOJA DE RUTA TÁCTICA", 20, yPos);
+            doc.line(20, yPos + 3, 40, yPos + 3);
+            yPos += 15;
+
+            tips.forEach((tip, i) => {
+                const descLines = doc.splitTextToSize(`Descripción: ${tip.desc}`, 160);
+                const benefitLines = doc.splitTextToSize(`Beneficios: ${tip.benefit}`, 160);
+                
+                // Cálculo de altura dinámica del recuadro
+                const boxHeight = 15 + (descLines.length * 4) + (benefitLines.length * 4) + 8;
+                
+                // Verificar salto de página preventivo
+                if (yPos + boxHeight > 270) { doc.addPage(); yPos = 20; }
+
+                doc.setFillColor(245, 245, 247);
+                doc.rect(20, yPos, 170, boxHeight, 'F');
+                
+                doc.setFontSize(9);
+                doc.setFont("helvetica", "bold");
+                doc.setTextColor(0, 113, 227);
+                doc.text(`${(i+1).toString().padStart(2, '0')} - ${tip.title.toUpperCase()}`, 25, yPos + 8);
+                
+                doc.setTextColor(100);
+                doc.text(`TIEMPO ESTIMADO: ${tip.time}`, 145, yPos + 8);
+                
+                doc.setTextColor(0, 0, 0);
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(8);
+                doc.text(descLines, 25, yPos + 16);
+                
+                // Beneficios con ajuste de línea (Verde)
+                const benefitStart = yPos + 16 + (descLines.length * 4) + 4;
+                doc.setTextColor(34, 197, 94);
+                doc.setFont("helvetica", "bold");
+                doc.text("Beneficios:", 25, benefitStart);
+                
+                doc.setFont("helvetica", "italic");
+                const benefitLabelWidth = doc.getTextWidth("Beneficios: ");
+                // Dibujar el texto del beneficio ajustado
+                doc.text(tip.benefit, 25 + benefitLabelWidth, benefitStart, { maxWidth: 160 - benefitLabelWidth });
+                
+                yPos += boxHeight + 8;
+            });
+
+            // --- PASOS A SEGUIR ---
+            if (yPos > 240) { doc.addPage(); yPos = 20; }
+            yPos += 5;
+            doc.setFontSize(12);
+            doc.setFont("helvetica", "bold");
+            doc.setTextColor(0, 0, 0);
+            doc.text("PRÓXIMOS PASOS PARA LA IMPLEMENTACIÓN", 20, yPos);
+            doc.line(20, yPos + 3, 40, yPos + 3);
+            yPos += 12;
+
+            doc.setFontSize(9);
+            doc.setFont("helvetica", "normal");
+            doc.text("1. Revisar los pilares estratégicos y sus beneficios detallados.", 25, yPos);
+            doc.text("2. Contactar a Eliseo para agendar una sesión de validación técnica.", 25, yPos + 7);
+            doc.text(`3. Presentar su ID de Proyecto (${serial}) para iniciar la arquitectura.`, 25, yPos + 14);
+
+            yPos += 25;
+            doc.setFillColor(0, 113, 227);
+            doc.rect(20, yPos, 170, 15, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFont("helvetica", "bold");
+            doc.text("WHATSAPP DE IMPLEMENTACIÓN: +54 379 504 1420", 105, yPos + 9, { align: 'center' });
+
+            yPos += 25;
+            doc.setTextColor(0, 0, 0);
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "bold");
+            doc.text("UN MENSAJE DE NUESTRO FUNDADOR", 105, yPos, { align: 'center' });
+            yPos += 8;
+            doc.setFontSize(9);
+            doc.setFont("helvetica", "normal");
+            const thanksReflective = "Gracias por permitirnos ser los arquitectos de su próxima gran etapa digital. Valoramos profundamente la ambición y la claridad que ha depositado en este diagnóstico estratégico. Que este plan sea el primer paso hacia una presencia que no solo compita, sino que trascienda su mercado.";
+            const thanksLines = doc.splitTextToSize(thanksReflective, 160);
+            doc.text(thanksLines, 105, yPos, { align: 'center' });
+
+            yPos += 25;
+            doc.setTextColor(150);
+            doc.setFontSize(8);
+            doc.setFont("helvetica", "italic");
+            const legend = "En la era del ruido, la simplicidad es el pilar más radical de la autoridad. No buscamos solo construir sitios web; diseñamos el estándar bajo el cual su marca será recordada. El futuro no se espera, se arquitectura paso a paso. En un mundo lleno de ruido el silencio es el arma mas poderosa.";
+            const legendLines = doc.splitTextToSize(legend, 150);
+            doc.text(legendLines, 105, yPos, { align: 'center' });
+
+            doc.save(`Plan_Estrategico_${name.replace(/\s+/g, '_')}.pdf`);
         }
 
         function downloadVoucher() {
             if (!lastAnalysis) return;
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: [148, 105] });
-            const { name, niche, desc, serial, date } = lastAnalysis;
+            const JsPDF = window.jspdf ? window.jspdf.jsPDF : window.jsPDF;
+            if (!JsPDF) return;
+
+            const doc = new JsPDF({ orientation: 'landscape', unit: 'mm', format: [148, 105] });
+            const { name, niche, serial, date } = lastAnalysis;
             
-            // Fondo Negro Premium
             doc.setFillColor(5, 5, 5);
             doc.rect(0, 0, 148, 105, 'F');
-            
-            // Bordes Elegantes
             doc.setDrawColor(28, 28, 30);
-            doc.setLineWidth(0.5);
+            doc.setLineWidth(0.8);
             doc.rect(5, 5, 138, 95); 
-            
-            doc.setDrawColor(0, 113, 227); // Azul Apple
-            doc.setLineWidth(0.2);
+            doc.setDrawColor(0, 113, 227); 
+            doc.setLineWidth(0.3);
             doc.line(10, 25, 138, 25);
             
-            // Logo "e."
             doc.setFillColor(255, 255, 255);
             doc.rect(12, 10, 8, 8, 'F');
             doc.setTextColor(0, 0, 0);
@@ -462,61 +609,52 @@
             doc.setFont("helvetica", "bold");
             doc.text("e.", 14, 16);
             
-            // Header Identidad
             doc.setTextColor(255, 255, 255);
             doc.setFontSize(7);
             doc.text("ELISEO STUDIO | ESTRATEGA IA", 24, 15);
-            doc.setFontSize(6);
+            doc.setFontSize(5);
             doc.setTextColor(100);
-            doc.text("SISTEMA DE ARQUITECTURA DIGITAL", 24, 18);
+            doc.text("SISTEMA DE ARQUITECTURA DIGITAL PREMIUM", 24, 18);
             
-            // Serial & Fecha (Top Right)
-            doc.setFontSize(6);
             doc.setTextColor(150);
-            doc.text(`ID: ${serial}`, 120, 15);
-            doc.text(`FECHA: ${date}`, 120, 18);
+            doc.setFontSize(6);
+            doc.text(`ID: ${serial}`, 115, 15);
+            doc.text(`FECHA: ${date}`, 115, 18);
             
-            // Título Principal
-            doc.setFontSize(14);
+            doc.setFontSize(16);
             doc.setTextColor(255, 255, 255);
             doc.setFont("helvetica", "bold");
-            doc.text("VOUCHER ELITE", 12, 35);
+            doc.text("VOUCHER ELITE", 12, 38);
             
-            // Información del Socio (Usuario)
             doc.setFontSize(7);
             doc.setTextColor(100);
-            doc.text("SOCIO ACREDITADO:", 12, 45);
+            doc.text("SOCIO ACREDITADO:", 12, 48);
             
             doc.setFontSize(18);
             doc.setTextColor(255, 255, 255);
-            doc.text(name.toUpperCase(), 12, 55);
+            doc.text(name.toUpperCase(), 12, 58);
             
-            doc.setFontSize(9);
-            doc.setTextColor(0, 113, 227);
-            doc.text(`RUBRO: ${niche.toUpperCase()}`, 12, 63);
-            
-            // Contexto del Negocio (Pequeño resumen)
+            doc.setFillColor(20, 20, 22);
+            doc.rect(12, 65, 124, 15, 'F');
+            doc.setTextColor(34, 197, 94);
             doc.setFontSize(7);
-            doc.setTextColor(100);
-            doc.setFont("helvetica", "normal");
-            const dLines = doc.splitTextToSize(`ENFOQUE: ${desc}`, 120);
-            doc.text(dLines, 12, 72);
-            
-            // Leyenda y Mensaje Final
-            doc.setDrawColor(40, 40, 40);
-            doc.line(12, 85, 50, 85);
-            
-            doc.setFontSize(7);
-            doc.setTextColor(150);
-            doc.setFont("helvetica", "italic");
-            const legend = "Este documento certifica el acceso prioritario a la arquitectura estratégica diseñada para potenciar su marca. La visión plasmada hoy es el estándar del mañana.";
-            const lLines = doc.splitTextToSize(legend, 120);
-            doc.text(lLines, 12, 90);
-            
-            doc.setFontSize(5);
-            doc.setTextColor(60);
             doc.setFont("helvetica", "bold");
-            doc.text("EL FUTURO PERTENECE A QUIENES DISEÑAN SU PROPIO ESTÁNDAR — ELISEO STUDIO 2025", 12, 100);
+            doc.text("VALOR ADJUNTO ACTIVADO:", 16, 71);
+            doc.setTextColor(255, 255, 255);
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(6);
+            doc.text("• ACCESO PRIORITARIO A LISTA DE ESPERA", 16, 76);
+            doc.text("• AUDITORÍA TÉCNICA DE UX (30 MIN) BONIFICADA", 70, 76);
+            
+            doc.setDrawColor(40, 40, 40);
+            doc.line(12, 85, 40, 85);
+            
+            doc.setFontSize(6);
+            doc.setTextColor(120);
+            doc.setFont("helvetica", "italic");
+            const philosophy = "En la era del ruido, la simplicidad es el pilar más radical de la autoridad. En un mundo lleno de ruido el silencio es el arma mas poderosa.";
+            const pLines = doc.splitTextToSize(philosophy, 120);
+            doc.text(pLines, 12, 90);
             
             doc.save(`Voucher_Elite_${name.replace(/\s+/g, '_')}.pdf`);
         }
