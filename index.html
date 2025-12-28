@@ -260,14 +260,14 @@
         const model = "gemini-2.5-flash-preview-09-2025";
         const whatsappNumber = "543795041420";
         
-        const STORAGE_KEY = 'eliseo_studio_last_strategy_v1.5';
+        // Regresamos a la clave original para que el usuario recupere su data
+        const STORAGE_KEY = 'eliseo_studio_last_strategy'; 
         const COUNTER_KEY = 'eliseo_studio_query_count';
         const MAX_QUERIES = 1; 
         
         let lastAnalysis = null;
 
         window.onload = () => {
-            checkUsageLimit();
             const savedData = localStorage.getItem(STORAGE_KEY);
             if (savedData) {
                 try {
@@ -275,7 +275,10 @@
                     renderResults(lastAnalysis);
                 } catch (e) {
                     localStorage.removeItem(STORAGE_KEY);
+                    checkUsageLimit();
                 }
+            } else {
+                checkUsageLimit();
             }
         };
 
