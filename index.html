@@ -255,7 +255,6 @@
     </div>
 
     <script>
-        // CONFIGURACIÓN TÉCNICA (Ya no hay API KEY aquí)
         const STORAGE_KEY = 'eliseo_studio_last_strategy'; 
         const COUNTER_KEY = 'eliseo_studio_query_count';
         const MAX_QUERIES = 1; 
@@ -290,11 +289,9 @@
             }
         }
 
-        // Función fetchAI modificada para llamar a nuestro Proxy en Vercel
-        async function fetchAI(body, retries = 5) {
+        async function fetchAI(body, retries = 3) {
             for (let i = 0; i < retries; i++) {
                 try {
-                    // Llamamos a la ruta de nuestra función serverless
                     const response = await fetch('/api/chat', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -304,13 +301,13 @@
                     const data = await response.json();
                     
                     if (!response.ok) {
-                        throw new Error(data.error || `Error ${response.status}`);
+                        // Enviamos el mensaje detallado de error del servidor
+                        throw new Error(data.error || `Error del servidor: ${response.status}`);
                     }
                     return data;
                 } catch (err) {
                     if (i === retries - 1) throw err;
-                    const wait = Math.pow(2, i) * 1000;
-                    await new Promise(r => setTimeout(r, wait));
+                    await new Promise(r => setTimeout(r, 1000));
                 }
             }
         }
@@ -350,7 +347,6 @@
             2. 'icon' debe ser una clase válida de FontAwesome 6 (ej: fa-rocket, fa-chart-line, fa-palette, fa-code, fa-shop).`;
 
             try {
-                // Notar que ya no pasamos el API Key ni la URL de Google aquí
                 const data = await fetchAI({
                     contents: [{ parts: [{ text: `Cliente: ${name}, Rubro: ${niche}, Negocio: ${desc}` }] }],
                     systemInstruction: { parts: [{ text: systemPrompt }] },
@@ -374,7 +370,8 @@
             } catch (error) {
                 loadingState.classList.add('hidden');
                 formState.classList.remove('hidden');
-                showError(`<strong>Error de Conexión:</strong> Es posible que la API Key no esté configurada en Vercel o se haya agotado la cuota.`);
+                // Mostramos el error real para diagnóstico
+                showError(`<strong>Error de Diagnóstico:</strong> ${error.message}. <br><br> <small>Asegúrate de estar usando el link de Vercel y no el de GitHub Pages.</small>`);
             }
         }
 
@@ -439,7 +436,6 @@
             checkUsageLimit();
         }
 
-        // Funciones de descarga de PDF (sin cambios significativos)
         function downloadPDF() {
             if (!lastAnalysis) return;
             const JsPDF = window.jspdf ? window.jspdf.jsPDF : window.jsPDF;
