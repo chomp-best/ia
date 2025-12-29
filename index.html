@@ -6,480 +6,125 @@
     <title>Estratega IA | Eliseo Studio</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <!-- jsPDF Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap');
-        
-        body { 
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background-color: #000; 
-            color: #fff;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        .apple-container {
-            max-width: 500px;
-            width: 100%;
-        }
-
-        .glass-panel {
-            background: rgba(28, 28, 30, 0.6);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 40px;
-        }
-
-        .input-dark {
-            background: #000;
-            border: 1px solid #1c1c1e;
-            border-radius: 16px;
-            transition: all 0.3s ease;
-        }
-
-        .input-dark:focus {
-            border-color: #0071e3;
-            outline: none;
-            box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.1);
-        }
-
-        .btn-ai {
-            background: #fff;
-            color: #000;
-            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-        }
-
-        .btn-ai:hover:not(:disabled) {
-            transform: translateY(-2px);
-            background: #f5f5f7;
-        }
-
-        .invoice-box {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px dashed rgba(255, 255, 255, 0.15);
-            border-radius: 24px;
-            font-family: 'JetBrains Mono', monospace;
-            padding: 1.5rem;
-        }
-
-        .tip-card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 24px;
-            padding: 1.25rem 1.5rem;
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            opacity: 0;
-            transform: translateY(10px);
-            cursor: pointer;
-            overflow: hidden;
-            max-height: 85px;
-            position: relative;
-        }
-
+        body { font-family: 'Inter', sans-serif; background-color: #000; color: #fff; -webkit-font-smoothing: antialiased; }
+        .apple-container { max-width: 500px; width: 100%; }
+        .glass-panel { background: rgba(28, 28, 30, 0.6); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 40px; }
+        .input-dark { background: #000; border: 1px solid #1c1c1e; border-radius: 16px; transition: all 0.3s ease; }
+        .input-dark:focus { border-color: #0071e3; outline: none; box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.1); }
+        .btn-ai { background: #fff; color: #000; transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1); }
+        .btn-ai:hover:not(:disabled) { transform: translateY(-2px); background: #f5f5f7; }
+        .invoice-box { background: rgba(255, 255, 255, 0.02); border: 1px dashed rgba(255, 255, 255, 0.15); border-radius: 24px; font-family: 'JetBrains Mono', monospace; padding: 1.5rem; }
+        .tip-card { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 24px; padding: 1.25rem 1.5rem; transition: all 0.5s ease; opacity: 0; transform: translateY(10px); cursor: pointer; overflow: hidden; max-height: 85px; position: relative; }
         .tip-card.show { opacity: 1; transform: translateY(0); }
-        .tip-card.expanded {
-            max-height: 700px;
-            background: rgba(255, 255, 255, 0.07);
-            border-color: rgba(0, 113, 227, 0.4);
-            padding-bottom: 2rem;
-        }
-
-        .tip-card.premium-tip {
-            border-color: rgba(168, 85, 247, 0.4);
-            background: linear-gradient(145deg, rgba(255, 255, 255, 0.04) 0%, rgba(168, 85, 247, 0.02) 100%);
-        }
-
-        .tip-number { font-size: 10px; font-weight: 800; color: #0071e3; text-transform: uppercase; letter-spacing: 0.1em; }
-        .premium-tip .tip-number { color: #a855f7; }
-
-        .expand-icon { transition: transform 0.4s ease; font-size: 10px; color: #444; }
-        .expanded .expand-icon { transform: rotate(45deg); color: #0071e3; }
-
-        .loader {
-            width: 40px; height: 40px;
-            border: 3px solid rgba(255, 255, 255, 0.1);
-            border-top-color: #0071e3;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
+        .tip-card.expanded { max-height: 700px; background: rgba(255, 255, 255, 0.07); border-color: rgba(0, 113, 227, 0.4); padding-bottom: 2rem; }
+        .tip-card.premium-tip { border-color: rgba(168, 85, 247, 0.4); background: linear-gradient(145deg, rgba(255, 255, 255, 0.04) 0%, rgba(168, 85, 247, 0.02) 100%); }
+        .loader { width: 40px; height: 40px; border: 3px solid rgba(255, 255, 255, 0.1); border-top-color: #0071e3; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .fade-up { animation: fadeUp 0.8s ease-out forwards; }
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-        .scarcity-legend {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            padding: 1rem;
-            border-radius: 16px;
-            text-align: center;
-        }
-
-        .thanks-box {
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-            padding-top: 2rem;
-            text-align: center;
-        }
-
-        .time-badge {
-            font-size: 9px;
-            background: rgba(255,255,255,0.05);
-            padding: 2px 8px;
-            border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.1);
-            color: #888;
-        }
     </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-6 bg-[#050505]">
 
-    <div class="apple-container fade-up">
-        
-        <!-- Header -->
+    <div class="apple-container">
         <div class="text-center mb-10">
             <div class="w-14 h-14 bg-white rounded-2xl mx-auto flex items-center justify-center mb-6 shadow-xl">
                 <i class="fa-solid fa-wand-magic-sparkles text-black text-2xl"></i>
             </div>
             <h1 class="text-3xl font-bold tracking-tighter mb-2">Estratega IA</h1>
-            <p class="text-sm text-gray-500">Arquitectura web para marcas que dominan su mercado.</p>
+            <p class="text-sm text-gray-500">Arquitectura web para marcas premium.</p>
         </div>
 
         <div class="glass-panel p-8 md:p-10">
-            
             <div id="error-box" class="hidden bg-red-500/10 border border-red-500/20 text-red-500 p-4 rounded-2xl text-[10px] mb-6 text-center leading-relaxed"></div>
 
-            <!-- Form State -->
             <div id="form-state">
                 <div class="space-y-6">
-                    <div>
-                        <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Tu Nombre</label>
-                        <input type="text" id="ownerName" 
-                            class="input-dark w-full p-4 text-sm placeholder:text-gray-800"
-                            placeholder="Ej: Eliseo Rodríguez">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Rubro del Negocio</label>
-                        <input type="text" id="businessNiche" 
-                            class="input-dark w-full p-4 text-sm placeholder:text-gray-800"
-                            placeholder="Ej: Real Estate, Showroom, Gastronomía...">
-                    </div>
-
-                    <div>
-                        <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">¿A qué se dedica tu empresa?</label>
-                        <textarea id="businessInput" 
-                            class="input-dark w-full h-32 p-4 text-sm leading-relaxed resize-none placeholder:text-gray-800"
-                            placeholder="Describe qué buscas lograr hoy (min. 20 caracteres)..."></textarea>
-                    </div>
+                    <input type="text" id="ownerName" class="input-dark w-full p-4 text-sm" placeholder="Tu Nombre">
+                    <input type="text" id="businessNiche" class="input-dark w-full p-4 text-sm" placeholder="Rubro">
+                    <textarea id="businessInput" class="input-dark w-full h-32 p-4 text-sm resize-none" placeholder="Descripción del negocio..."></textarea>
                 </div>
-
-                <div class="scarcity-legend mt-8">
-                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em] mb-1">Nota de Cortesía</p>
-                    <p class="text-[11px] text-gray-600 leading-relaxed italic">
-                        Este diagnóstico utiliza el motor de IA de Eliseo Studio y está limitado a **una única consulta**. Por favor, sea preciso para obtener el máximo valor estratégico.
-                    </p>
-                </div>
-                
-                <button onclick="generateStrategy()" id="submitBtn" class="btn-ai w-full py-4 rounded-2xl font-bold text-sm mt-4 transition-all">
-                    Diseñar Hoja de Ruta Web
+                <button onclick="generateStrategy()" id="submitBtn" class="btn-ai w-full py-4 rounded-2xl font-bold text-sm mt-8">
+                    Diseñar Hoja de Ruta
                 </button>
             </div>
 
-            <!-- Loading State -->
             <div id="loading-state" class="hidden py-10 text-center">
                 <div class="loader mx-auto mb-6"></div>
-                <p class="text-sm text-gray-400 font-medium">Analizando el mercado y diseñando la interfaz ideal...</p>
+                <p class="text-sm text-gray-400">Consultando arquitectura de IA...</p>
             </div>
 
-            <!-- Result State -->
             <div id="result-state" class="hidden">
-                <div class="mb-6 text-center">
-                    <p class="text-[10px] font-black text-blue-500 uppercase tracking-[0.3em] mb-1">Hoja de Ruta</p>
-                    <h2 class="text-xl font-bold text-white tracking-tight">PLAN DE IMPLEMENTACIÓN</h2>
-                </div>
-                
-                <div class="flex items-center justify-between mb-4">
-                    <span class="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Estrategias Prioritarias</span>
-                    <span class="text-[10px] font-bold text-purple-500 uppercase tracking-widest bg-purple-500/10 px-3 py-1 rounded-full">Visión IA</span>
-                </div>
-                
-                <!-- Tips Container -->
                 <div id="tips-container" class="space-y-4 mb-8"></div>
-
-                <!-- Invoice Summary -->
-                <div id="invoice-summary" class="invoice-box mb-10">
-                    <div class="flex justify-between items-center mb-4 pb-2 border-b border-white/10">
-                        <span class="text-[10px] font-bold text-gray-500 uppercase">Resumen del Proyecto</span>
-                        <span class="text-[10px] text-gray-500">v1.5</span>
-                    </div>
-                    <div id="invoice-items" class="space-y-3 text-[11px]"></div>
-                </div>
-
-                <!-- Thanks and Actions -->
-                <div class="thanks-box space-y-6">
-                    <div class="mb-8">
-                        <h3 class="text-sm font-bold mb-2 text-white">Gracias por confiar en el sistema.</h3>
-                        <p class="text-[11px] text-gray-500 italic leading-relaxed">"La excelencia no es un acto, es un estándar de diseño." — Eliseo Studio</p>
-                    </div>
-
-                    <a id="whatsappBtn" href="#" target="_blank" class="bg-[#25d366] text-white w-full py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-3 shadow-lg shadow-green-500/20 transition-transform active:scale-[0.98]">
-                        <i class="fa-brands fa-whatsapp text-lg"></i>
-                        Iniciar Proyecto vía WhatsApp
-                    </a>
-                    
-                    <div class="grid grid-cols-2 gap-3">
-                        <button onclick="downloadPDF()" class="bg-white/5 border border-white/10 text-white py-4 rounded-2xl font-bold text-[11px] flex items-center justify-center gap-2 hover:bg-white/10 transition-all">
-                            <i class="fa-solid fa-file-pdf text-red-500"></i>
-                            PLAN COMPLETO
-                        </button>
-
-                        <button onclick="downloadVoucher()" class="bg-blue-600 text-white py-4 rounded-2xl font-bold text-[11px] flex items-center justify-center gap-2 hover:bg-blue-500 transition-all shadow-lg shadow-blue-500/20">
-                            <i class="fa-solid fa-address-card"></i>
-                            VOUCHER ELITE
-                        </button>
-                    </div>
-
-                    <p id="limit-reached-msg" class="text-[9px] text-gray-700 uppercase tracking-widest pt-4 font-bold">
-                        Consulta única completada. Contactar por WhatsApp para un análisis profundo.
-                    </p>
-                </div>
+                <a id="whatsappBtn" href="#" target="_blank" class="bg-[#25d366] text-white w-full py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-3">
+                    <i class="fa-brands fa-whatsapp"></i> Iniciar vía WhatsApp
+                </a>
             </div>
-
-        </div>
-
-        <div class="mt-12 text-center">
-            <a href="https://chomp-best.github.io/proyectos/" class="text-[10px] font-bold text-gray-700 uppercase tracking-widest hover:text-gray-400 transition-colors" target="_parent">
-                <i class="fa-solid fa-chevron-left mr-2"></i> Regresar a Proyectos
-            </a>
         </div>
     </div>
 
     <script>
-        const STORAGE_KEY = 'eliseo_studio_last_strategy'; 
-        const COUNTER_KEY = 'eliseo_studio_query_count';
-        const MAX_QUERIES = 1; 
-        
-        let lastAnalysis = null;
-
-        window.onload = () => {
-            const savedData = localStorage.getItem(STORAGE_KEY);
-            if (savedData) {
-                try {
-                    lastAnalysis = JSON.parse(savedData);
-                    renderResults(lastAnalysis);
-                } catch (e) {
-                    localStorage.removeItem(STORAGE_KEY);
-                    checkUsageLimit();
-                }
-            } else {
-                checkUsageLimit();
-            }
-        };
-
-        function checkUsageLimit() {
-            const count = parseInt(localStorage.getItem(COUNTER_KEY) || "0");
-            const submitBtn = document.getElementById('submitBtn');
-
-            if (count >= MAX_QUERIES) {
-                if (submitBtn) {
-                    submitBtn.disabled = true;
-                    submitBtn.textContent = "Consulta Completada";
-                    submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                }
-            }
-        }
-
-        async function fetchAI(body, retries = 3) {
-            for (let i = 0; i < retries; i++) {
-                try {
-                    const response = await fetch('/api/chat', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(body)
-                    });
-                    
-                    const data = await response.json();
-                    
-                    if (!response.ok) {
-                        // Enviamos el mensaje detallado de error del servidor
-                        throw new Error(data.error || `Error del servidor: ${response.status}`);
-                    }
-                    return data;
-                } catch (err) {
-                    if (i === retries - 1) throw err;
-                    await new Promise(r => setTimeout(r, 1000));
-                }
-            }
+        function showError(msg) {
+            const errBox = document.getElementById('error-box');
+            // Si el mensaje es un objeto, lo convertimos a texto para evitar [object Object]
+            const cleanMsg = typeof msg === 'object' ? JSON.stringify(msg) : msg;
+            errBox.innerHTML = `<strong>Diagnóstico Técnico:</strong> ${cleanMsg}`;
+            errBox.classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         async function generateStrategy() {
-            const count = parseInt(localStorage.getItem(COUNTER_KEY) || "0");
-            if (count >= MAX_QUERIES) return;
-
             const name = document.getElementById('ownerName').value.trim();
             const niche = document.getElementById('businessNiche').value.trim();
             const desc = document.getElementById('businessInput').value.trim();
 
-            if (!name || !niche || desc.length < 20) {
-                showError("Por favor, aporta más detalles sobre tu empresa (mín. 20 caracteres).");
-                return;
-            }
+            if (desc.length < 10) { showError("Por favor describe mejor tu negocio."); return; }
 
-            const formState = document.getElementById('form-state');
-            const loadingState = document.getElementById('loading-state');
-            const errBox = document.getElementById('error-box');
-
-            errBox.classList.add('hidden');
-            formState.classList.add('hidden');
-            loadingState.classList.remove('hidden');
-
-            const systemPrompt = `Eres el estratega senior de Eliseo Studio. Analiza el negocio y diseña 3 pilares tácticos web exclusivos. 
-            Responde estrictamente en JSON: 
-            {
-              "tips": [
-                {"title": "...", "desc": "...", "benefit": "...", "time": "X días", "icon": "fa-icono-fontawesome"},
-                {"title": "...", "desc": "...", "benefit": "...", "time": "X días", "icon": "fa-icono-fontawesome"},
-                {"title": "...", "desc": "...", "benefit": "...", "time": "X días", "icon": "fa-icono-fontawesome"}
-              ]
-            }
-            IMPORTANTE: 
-            1. La suma de los 'time' de los 3 pilares debe ser como MÁXIMO 7 días en total.
-            2. 'icon' debe ser una clase válida de FontAwesome 6 (ej: fa-rocket, fa-chart-line, fa-palette, fa-code, fa-shop).`;
+            document.getElementById('form-state').classList.add('hidden');
+            document.getElementById('loading-state').classList.remove('hidden');
+            document.getElementById('error-box').classList.add('hidden');
 
             try {
-                const data = await fetchAI({
-                    contents: [{ parts: [{ text: `Cliente: ${name}, Rubro: ${niche}, Negocio: ${desc}` }] }],
-                    systemInstruction: { parts: [{ text: systemPrompt }] },
-                    generationConfig: { responseMimeType: "application/json" }
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: `Cliente: ${name}, Rubro: ${niche}, Negocio: ${desc}` }] }],
+                        systemInstruction: { parts: [{ text: "Genera 3 estrategias web exclusivas en JSON: {tips: [{title, desc, benefit, time, icon}]}. Iconos de FontAwesome 6." }] },
+                        generationConfig: { responseMimeType: "application/json" }
+                    })
                 });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || `Error del servidor: ${response.status}`);
+                }
 
                 const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
                 const jsonResponse = JSON.parse(rawText);
-                
-                const serial = "ES-" + Math.floor(Math.random() * 900000 + 100000);
-                const date = new Date().toLocaleDateString('es-AR');
-
-                lastAnalysis = { ...jsonResponse, name, niche, desc, serial, date };
-                
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(lastAnalysis));
-                localStorage.setItem(COUNTER_KEY, (count + 1).toString());
-
-                loadingState.classList.add('hidden');
-                renderResults(lastAnalysis);
+                renderResults({ ...jsonResponse, name, serial: "ES-" + Math.floor(Math.random()*9999) });
 
             } catch (error) {
-                loadingState.classList.add('hidden');
-                formState.classList.remove('hidden');
-                // Mostramos el error real para diagnóstico
-                showError(`<strong>Error de Diagnóstico:</strong> ${error.message}. <br><br> <small>Asegúrate de estar usando el link de Vercel y no el de GitHub Pages.</small>`);
+                document.getElementById('loading-state').classList.add('hidden');
+                document.getElementById('form-state').classList.remove('hidden');
+                showError(error.message);
             }
         }
 
-        function showError(msg) {
-            const errBox = document.getElementById('error-box');
-            errBox.innerHTML = msg;
-            errBox.classList.remove('hidden');
-        }
-
         function renderResults(data) {
-            const formState = document.getElementById('form-state');
-            const resultState = document.getElementById('result-state');
-            const tipsContainer = document.getElementById('tips-container');
-            const invoiceItems = document.getElementById('invoice-items');
-            const whatsappBtn = document.getElementById('whatsappBtn');
-
-            formState.classList.add('hidden');
-            resultState.classList.remove('hidden');
-            
-            tipsContainer.innerHTML = '';
-            invoiceItems.innerHTML = '';
-
-            data.tips.forEach((tip, index) => {
-                const isLast = index === 2;
+            document.getElementById('loading-state').classList.add('hidden');
+            document.getElementById('result-state').classList.remove('hidden');
+            const container = document.getElementById('tips-container');
+            container.innerHTML = '';
+            data.tips.forEach((tip, i) => {
                 const card = document.createElement('div');
-                card.className = `tip-card ${isLast ? 'premium-tip' : ''}`;
-                
-                card.innerHTML = `
-                    <div class="tip-header flex justify-between items-start">
-                        <div class="flex-grow pr-8">
-                            <div class="flex items-center gap-2 mb-1">
-                                <span class="tip-number">${isLast ? 'Sello Eliseo Studio' : `Estrategia 0${index + 1}`}</span>
-                                <span class="time-badge">${tip.time || 'N/A'}</span>
-                            </div>
-                            <h3 class="font-bold text-white tracking-tight text-sm">${tip.title}</h3>
-                        </div>
-                        <div class="flex flex-col items-end gap-3 absolute right-5 top-5">
-                            <i class="fa-solid ${tip.icon || 'fa-star'} ${isLast ? 'text-purple-500' : 'text-blue-500'} text-lg opacity-80"></i>
-                            <i class="fa-solid fa-plus expand-icon"></i>
-                        </div>
-                    </div>
-                    <div class="tip-content space-y-4 pt-4">
-                        <p class="text-[11px] text-gray-300 leading-relaxed">${tip.desc}</p>
-                        <div class="bg-white/5 p-3 rounded-xl border border-white/5">
-                            <p class="text-[9px] font-bold text-gray-500 uppercase mb-1">Beneficios</p>
-                            <p class="text-[10px] text-green-400 italic">${tip.benefit}</p>
-                        </div>
-                    </div>
-                `;
-                card.onclick = () => card.classList.toggle('expanded');
-                tipsContainer.appendChild(card);
-                setTimeout(() => card.classList.add('show'), 50 * index);
-
-                const item = document.createElement('div');
-                item.className = 'flex justify-between items-center opacity-80';
-                item.innerHTML = `<span>${tip.title.toUpperCase()}</span><span class="text-gray-600">[${tip.time}]</span>`;
-                invoiceItems.appendChild(item);
+                card.className = `tip-card show ${i === 2 ? 'premium-tip' : ''}`;
+                card.innerHTML = `<h3 class="font-bold text-white">${tip.title}</h3><p class="text-xs text-gray-400 mt-2">${tip.desc}</p>`;
+                container.appendChild(card);
             });
-
-            let waText = `Hola Eliseo! Soy *${data.name}*. Acabo de generar mi Plan de Implementación IA para mi negocio de *${data.niche}* y quiero iniciar el proyecto. ID: ${data.serial}`;
-            whatsappBtn.href = `https://wa.me/543795041420?text=${encodeURIComponent(waText)}`;
-            checkUsageLimit();
-        }
-
-        function downloadPDF() {
-            if (!lastAnalysis) return;
-            const JsPDF = window.jspdf ? window.jspdf.jsPDF : window.jsPDF;
-            if (!JsPDF) return;
-            const doc = new JsPDF();
-            const { name, niche, tips, desc, serial, date } = lastAnalysis;
-            doc.setFillColor(0, 0, 0);
-            doc.rect(0, 0, 210, 50, 'F');
-            doc.setTextColor(255, 255, 255);
-            doc.setFontSize(26);
-            doc.setFont("helvetica", "bold");
-            doc.text("ELISEO STUDIO", 20, 30);
-            doc.setFontSize(10);
-            doc.text("ESTRATEGIA IA | PLAN DE IMPLEMENTACIÓN", 20, 38);
-            doc.text(`ID: ${serial}`, 160, 30);
-            doc.text(`FECHA: ${date}`, 160, 35);
-            doc.setTextColor(0, 0, 0);
-            doc.setFontSize(12);
-            doc.text("ANÁLISIS DE SOCIO", 20, 65);
-            doc.setDrawColor(0, 113, 227);
-            doc.line(20, 68, 40, 68);
-            doc.setFontSize(10);
-            doc.setFont("helvetica", "bold");
-            doc.text("NOMBRE:", 20, 78);
-            doc.setFont("helvetica", "normal");
-            doc.text(name.toUpperCase(), 50, 78);
-            doc.text("MERCADO:", 20, 85);
-            doc.text(niche.toUpperCase(), 50, 85);
-            doc.save(`Plan_Estrategico_${name.replace(/\s+/g, '_')}.pdf`);
-        }
-
-        function downloadVoucher() {
-            if (!lastAnalysis) return;
-            const JsPDF = window.jspdf ? window.jspdf.jsPDF : window.jsPDF;
-            if (!JsPDF) return;
-            const doc = new JsPDF({ orientation: 'landscape', unit: 'mm', format: [148, 105] });
-            const { name, serial, date } = lastAnalysis;
-            doc.setFillColor(5, 5, 5);
-            doc.rect(0, 0, 148, 105, 'F');
-            doc.setTextColor(255, 255, 255);
-            doc.setFontSize(16);
-            doc.text("VOUCHER ELITE", 12, 38);
-            doc.text(name.toUpperCase(), 12, 58);
-            doc.save(`Voucher_Elite_${name.replace(/\s+/g, '_')}.pdf`);
+            document.getElementById('whatsappBtn').href = `https://wa.me/543795041420?text=ID:${data.serial}`;
         }
     </script>
 </body>
