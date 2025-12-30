@@ -8,7 +8,7 @@ export default async function handler(req, res) {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Método no permitido' });
 
     const apiKey = process.env.GEMINI_API_KEY;
-    // Cambiamos a la versión de modelo más compatible
+    // Usamos la versión de modelo 1.5 Flash que es ideal para velocidad y JSON
     const model = "gemini-1.5-flash"; 
 
     if (!apiKey || apiKey.trim() === "") {
@@ -18,8 +18,8 @@ export default async function handler(req, res) {
     }
 
     try {
-        // Usamos la versión v1 de la API que es más estable para este modelo
-        const url = `https://generativelanguage.googleapis.com/v1/models/${model}:generateContent?key=${apiKey}`;
+        // Volvemos a v1beta porque v1 estable NO soporta systemInstruction ni responseMimeType en este formato
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
         
         const response = await fetch(url, {
             method: 'POST',
@@ -30,6 +30,7 @@ export default async function handler(req, res) {
         const data = await response.json();
         
         if (!response.ok) {
+            // Si hay un error, devolvemos el detalle para depurar
             return res.status(response.status).json({ 
                 error: data.error?.message || 'Error en la respuesta de Google' 
             });
