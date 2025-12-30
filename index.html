@@ -67,7 +67,6 @@
     <script>
         function showError(msg) {
             const errBox = document.getElementById('error-box');
-            // Si el mensaje es un objeto, lo convertimos a texto para evitar [object Object]
             const cleanMsg = typeof msg === 'object' ? JSON.stringify(msg) : msg;
             errBox.innerHTML = `<strong>Diagnóstico Técnico:</strong> ${cleanMsg}`;
             errBox.classList.remove('hidden');
@@ -91,8 +90,12 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         contents: [{ parts: [{ text: `Cliente: ${name}, Rubro: ${niche}, Negocio: ${desc}` }] }],
-                        systemInstruction: { parts: [{ text: "Genera 3 estrategias web exclusivas en JSON: {tips: [{title, desc, benefit, time, icon}]}. Iconos de FontAwesome 6." }] },
-                        generationConfig: { responseMimeType: "application/json" }
+                        // Simplificamos la instrucción para asegurar compatibilidad
+                        systemInstruction: { parts: [{ text: "Actúa como estratega web. Genera 3 consejos tácticos en formato JSON: {tips: [{title, desc, benefit, time, icon}]}. Los iconos deben ser de FontAwesome 6." }] },
+                        generationConfig: { 
+                            responseMimeType: "application/json",
+                            temperature: 0.7
+                        }
                     })
                 });
 
@@ -103,6 +106,8 @@
                 }
 
                 const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (!rawText) throw new Error("La IA no devolvió contenido.");
+                
                 const jsonResponse = JSON.parse(rawText);
                 renderResults({ ...jsonResponse, name, serial: "ES-" + Math.floor(Math.random()*9999) });
 
@@ -118,13 +123,24 @@
             document.getElementById('result-state').classList.remove('hidden');
             const container = document.getElementById('tips-container');
             container.innerHTML = '';
-            data.tips.forEach((tip, i) => {
-                const card = document.createElement('div');
-                card.className = `tip-card show ${i === 2 ? 'premium-tip' : ''}`;
-                card.innerHTML = `<h3 class="font-bold text-white">${tip.title}</h3><p class="text-xs text-gray-400 mt-2">${tip.desc}</p>`;
-                container.appendChild(card);
-            });
-            document.getElementById('whatsappBtn').href = `https://wa.me/543795041420?text=ID:${data.serial}`;
+            
+            if (data.tips && Array.isArray(data.tips)) {
+                data.tips.forEach((tip, i) => {
+                    const card = document.createElement('div');
+                    card.className = `tip-card show ${i === 2 ? 'premium-tip' : ''}`;
+                    card.innerHTML = `
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="font-bold text-white">${tip.title}</h3>
+                            <i class="fa-solid ${tip.icon || 'fa-lightbulb'} text-blue-500"></i>
+                        </div>
+                        <p class="text-xs text-gray-400">${tip.desc}</p>
+                        <p class="text-[10px] text-green-500 mt-2 font-bold">${tip.benefit || ''}</p>
+                    `;
+                    container.appendChild(card);
+                });
+            }
+            
+            document.getElementById('whatsappBtn').href = `https://wa.me/543795041420?text=Hola! Soy ${data.name}, ID de Plan: ${data.serial}`;
         }
     </script>
 </body>
